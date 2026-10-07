@@ -228,6 +228,8 @@ const KIND = {
   service: { tag: '<span class="tag t-srv">🚀 Услуга</span>', hint: '🚀 Услуга: продавец берёт заказ в работу и отчитывается в чате заказа.', name: 'Услуга (буст, пополнение)' },
   physical: { tag: '<span class="tag t-phy">📦 Доставка</span>', hint: '📦 Отправим курьером или почтой, трек-номер появится в заказе.', name: 'Физический товар (доставка)' },
 };
+const physPay = () => { const p = (S.data && S.data.payments) || {}; return [p.rub && 'карта ₽', p.crypto && 'крипта'].filter(Boolean); };
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const SECTION_COLORS = { topup: ['#22d3ee', '#2563eb'], gear: ['#c084fc', '#db2777'] };
 
 const S = { data: null, cart: [], stack: [{ v: 'home' }], q: '', adminTab: 'stats', ordersFilter: 'active', delivery: {}, promo: null };
@@ -346,7 +348,7 @@ V.home = () => {
   const q = S.q.trim().toLowerCase();
   const ava = u.photo_url ? `<img src="${esc(u.photo_url)}" alt="">` : esc((u.first_name || '?')[0]);
   let h = `<div class="top"><div><div class="logo">${esc(d.shop.name)}</div><div class="logo-sub">${esc(d.shop.tagline)}</div></div><div class="ava">${ava}</div></div>
-  <div class="demo"><span>🧪</span><span>Демо-магазин: товары вымышленные, цены 1–5 ⭐. Карта и крипта работают в тестовом режиме — реальные деньги не списываются.</span></div>
+  <div class="demo"><span>🧪</span><span>Демо-магазин: товары вымышленные, цены 1–5 ⭐.${physPay().length ? ` ${cap(physPay().join(' и '))} — в тестовом режиме, реальные деньги не списываются.` : ''}</span></div>
   <div class="search"><input id="q" placeholder="Поиск: Robux, ключ, буст…" value="${esc(S.q)}" oninput="S.q=this.value;homeSearch()"></div>
   <div id="home-body">${homeBody(q)}</div>`;
   return h;
@@ -392,7 +394,7 @@ V.section = (c) => {
   const s = S.data.sections[c.key];
   const list = S.data.products.filter((p) => p.section === c.key);
   return `<div class="h1">${s.emoji} ${esc(s.title)}</div>
-    ${c.key === 'gear' ? '<div class="info"><span>💳</span><span>Девайсы и мерч оплачиваются картой или криптой: это физические товары с доставкой.</span></div><div style="height:12px"></div>' : ''}
+    ${c.key === 'gear' && physPay().length ? `<div class="info"><span>💳</span><span>Девайсы и мерч — физические товары с доставкой, оплата: ${physPay().join(' или ')}.</span></div><div style="height:12px"></div>` : ''}
     ${list.map(pcard).join('') || '<div class="empty">Пока пусто</div>'}`;
 };
 
@@ -478,7 +480,7 @@ V.cart = () => {
   return `<div class="h1">Корзина</div>
     ${both ? '<div class="info" style="margin-bottom:12px"><span>ℹ️</span><span>Цифровые товары и девайсы оформляются отдельно: по правилам Telegram цифровое оплачивается только звёздами.</span></div>' : ''}
     ${group('digital', '🎮 Цифровые товары', 'оплата ⭐')}
-    ${group('physical', '📦 Девайсы и мерч', 'карта ₽ или крипта')}`;
+    ${group('physical', '📦 Девайсы и мерч', physPay().join(' или ') || 'оплата не подключена')}`;
 };
 function qtyC(idx, d) { const i = S.cart[idx], p = P(i.id); i.qty = Math.max(1, Math.min(maxQty(p), i.qty + d)); haptic(); saveCart(); refresh(); }
 function delC(idx) { S.cart.splice(idx, 1); haptic(); saveCart(); refresh(); }
@@ -513,8 +515,9 @@ V.checkout = (c) => {
       <label class="label">Адрес или пункт выдачи *</label><textarea id="d-address" rows="2" style="min-height:60px">${esc(d.address || '')}</textarea>
       <label class="label">Комментарий</label><input id="d-comment" value="${esc(d.comment || '')}" placeholder="Необязательно">
       <div class="h2">Оплата</div>
-      ${method('rub', '💳', 'Банковская карта', 'ЮKassa · тестовый режим', pay.rub)}
-      ${method('crypto', '₿', 'Криптовалюта', `USDT, TON, BTC через CryptoBot${pay.cryptoTestnet ? ' · тестовая сеть' : ''}`, pay.crypto)}
+      ${pay.rub ? method('rub', '💳', 'Банковская карта', 'ЮKassa · тестовый режим', true) : ''}
+      ${pay.crypto ? method('crypto', '₿', 'Криптовалюта', `USDT, TON, BTC через CryptoBot${pay.cryptoTestnet ? ' · тестовая сеть' : ''}`, true) : ''}
+      ${!pay.rub && !pay.crypto ? '<div class="card mut sm">Оплата девайсов пока не подключена.</div>' : ''}
     ` : `
       <div class="h2">Оплата</div>
       <div class="method on"><div class="mi">⭐</div><div class="grow"><b>Telegram Stars</b><div class="xs mut">Звёзды покупаются прямо в Telegram</div></div><div class="radio"></div></div>
@@ -731,7 +734,7 @@ A.stats = async () => {
     <div class="h2">Выручка за всё время</div>
     <div class="card">
       <div class="sum"><span>⭐ Звёзды · ${by('stars').n || 0} зак.</span><b>${by('stars').sum || 0} ⭐</b></div>
-      <div class="sum"><span>💳 Карта · ${by('rub').n || 0} зак.</span><b>${num(by('rub').sum)} ₽</b></div>
+      ${S.data.payments.rub || by('rub').n ? `<div class="sum"><span>💳 Карта · ${by('rub').n || 0} зак.</span><b>${num(by('rub').sum)} ₽</b></div>` : ''}
       <div class="sum"><span>₿ Крипта · ${by('crypto').n || 0} зак.</span><b>${num(by('crypto').sum)} ₽</b></div>
       <div class="sum total"><span>Пользователей · покупателей</span><span>${s.users} · ${s.buyers}</span></div>
     </div>
