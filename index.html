@@ -81,7 +81,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.45));z-index:-1}
 .hero .he{position:absolute;right:14px;top:8px;font-size:84px;line-height:1;filter:drop-shadow(0 8px 20px rgba(0,0,0,.35))}
 .hero .hg{font:700 11px Unbounded,sans-serif;letter-spacing:.06em;opacity:.85;text-transform:uppercase}
-.hero .ht{font:800 21px/1.2 Unbounded,sans-serif;margin-top:4px;max-width:85%}
+.hero .ht{font:800 21px/1.2 Unbounded,sans-serif;margin-top:4px;max-width:66%}
 .price-big{font:800 28px Unbounded,sans-serif}
 .info{display:flex;gap:10px;padding:12px 13px;background:var(--s1);border:1px solid var(--line);border-radius:var(--r2);font-size:13px}
 .stepper{display:inline-flex;align-items:center;background:var(--s2);border:1px solid var(--line);border-radius:12px}
@@ -211,9 +211,13 @@ const API_URL = 'https://raspy-disk-e6be.anonimmerfi.workers.dev';
 const tg = window.Telegram && window.Telegram.WebApp;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const num = (n) => String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-const money = (n, cur) => (cur === 'XTR' ? `${n} ⭐` : `${num(n)} ₽`);
-const priceOf = (p) => (p.kind === 'physical' ? money(p.price_rub, 'RUB') : money(p.price_stars, 'XTR'));
+const r2 = (n) => Math.round(Number(n || 0) * 100) / 100;
+const usd = (n) => '$' + r2(n).toFixed(2).replace(/\.00$/, '');
+const money = (n, cur) => (cur === 'XTR' ? `${n} ⭐` : usd(n));
+const priceOf = (p) => (p.kind === 'physical' ? usd(p.price_usd) : money(p.price_stars, 'XTR'));
+// цена товара в выбранной валюте: XTR — звёзды, USD — крипта
+const priceIn = (p, cur) => (cur === 'XTR' ? p.price_stars : r2(p.price_usd));
+const cryptoOk = (p) => { const pay = (S.data && S.data.payments) || {}; return !!(pay.crypto && p.price_usd && (p.kind === 'physical' || pay.cryptoDigital)); };
 const dateStr = (t) => new Date(t * 1000).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const haptic = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t); } catch (e) {} };
 const hapticN = (t = 'success') => { try { tg.HapticFeedback.notificationOccurred(t); } catch (e) {} };
@@ -228,8 +232,6 @@ const KIND = {
   service: { tag: '<span class="tag t-srv">🚀 Услуга</span>', hint: '🚀 Услуга: продавец берёт заказ в работу и отчитывается в чате заказа.', name: 'Услуга (буст, пополнение)' },
   physical: { tag: '<span class="tag t-phy">📦 Доставка</span>', hint: '📦 Отправим курьером или почтой, трек-номер появится в заказе.', name: 'Физический товар (доставка)' },
 };
-const physPay = () => { const p = (S.data && S.data.payments) || {}; return [p.rub && 'карта ₽', p.crypto && 'крипта'].filter(Boolean); };
-const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const SECTION_COLORS = { topup: ['#22d3ee', '#2563eb'], gear: ['#c084fc', '#db2777'] };
 
 const S = { data: null, cart: [], stack: [{ v: 'home' }], q: '', adminTab: 'stats', ordersFilter: 'active', delivery: {}, promo: null };
@@ -348,7 +350,7 @@ V.home = () => {
   const q = S.q.trim().toLowerCase();
   const ava = u.photo_url ? `<img src="${esc(u.photo_url)}" alt="">` : esc((u.first_name || '?')[0]);
   let h = `<div class="top"><div><div class="logo">${esc(d.shop.name)}</div><div class="logo-sub">${esc(d.shop.tagline)}</div></div><div class="ava">${ava}</div></div>
-  <div class="demo"><span>🧪</span><span>Демо-магазин: товары вымышленные, цены 1–5 ⭐.${physPay().length ? ` ${cap(physPay().join(' и '))} — в тестовом режиме, реальные деньги не списываются.` : ''}</span></div>
+  <div class="demo"><span>🧪</span><span>Демо-магазин: товары вымышленные, цены 1–5 ⭐.${d.payments.crypto && d.payments.cryptoTestnet ? ' Крипта работает в тестовой сети — настоящие монеты не списываются.' : ''}</span></div>
   <div class="search"><input id="q" placeholder="Поиск: Robux, ключ, буст…" value="${esc(S.q)}" oninput="S.q=this.value;homeSearch()"></div>
   <div id="home-body">${homeBody(q)}</div>`;
   return h;
@@ -394,7 +396,7 @@ V.section = (c) => {
   const s = S.data.sections[c.key];
   const list = S.data.products.filter((p) => p.section === c.key);
   return `<div class="h1">${s.emoji} ${esc(s.title)}</div>
-    ${c.key === 'gear' && physPay().length ? `<div class="info"><span>💳</span><span>Девайсы и мерч — физические товары с доставкой, оплата: ${physPay().join(' или ')}.</span></div><div style="height:12px"></div>` : ''}
+    ${c.key === 'gear' ? `<div class="info"><span>📦</span><span>Девайсы и мерч — физические товары с доставкой${S.data.payments.crypto ? ', оплата криптой (USDT, TON, BTC)' : ''}.</span></div><div style="height:12px"></div>` : ''}
     ${list.map(pcard).join('') || '<div class="empty">Пока пусто</div>'}`;
 };
 
@@ -418,6 +420,7 @@ V.product = (c) => {
       <div class="price-big">${priceOf(p)}</div>
       <div class="row wrap" style="justify-content:flex-end;gap:6px">${p.badge ? `<span class="tag t-badge">${esc(p.badge)}</span>` : ''}${KIND[p.kind].tag}</div>
     </div>
+    ${p.kind !== 'physical' && cryptoOk(p) ? `<div class="sm mut" style="margin:-2px 0 6px">или <b style="color:var(--tx)">${usd(p.price_usd)}</b> криптой</div>` : ''}
     <div class="row between sm mut">${stockLine ? `<span>${stockLine}</span>` : '<span></span>'}${p.reviews ? `<span><span class="stars">★</span> ${p.rating} · ${p.reviews} отзыв(ов)</span>` : ''}</div>
     <div class="info" style="margin-top:14px">${KIND[p.kind].hint}</div>
     <div class="card pre" style="margin-top:10px">${esc(p.description || '')}</div>
@@ -453,7 +456,7 @@ function shareProduct(id) {
 /* Корзина */
 const cartLines = (kind) => S.cart.map((i, idx) => ({ ...i, idx, p: P(i.id) }))
   .filter((i) => i.p && ((i.p.kind === 'physical') === (kind === 'physical')));
-const cartSum = (lines) => lines.reduce((a, i) => a + i.qty * (i.p.kind === 'physical' ? i.p.price_rub : i.p.price_stars), 0);
+const cartSum = (lines, cur) => r2(lines.reduce((a, i) => a + i.qty * priceIn(i.p, cur), 0));
 
 V.cart = () => {
   S.cart = S.cart.filter((i) => P(i.id));
@@ -461,7 +464,7 @@ V.cart = () => {
   const group = (kind, title, sub) => {
     const lines = cartLines(kind);
     if (!lines.length) return '';
-    const cur = kind === 'physical' ? 'RUB' : 'XTR';
+    const cur = kind === 'physical' ? 'USD' : 'XTR';
     return `<div class="card" style="margin-bottom:12px">
       <div class="row between" style="margin-bottom:6px"><b>${title}</b><span class="xs mut">${sub}</span></div>
       ${lines.map((i) => `<div class="citem">
@@ -470,17 +473,17 @@ V.cart = () => {
           ${i.note ? `<div class="xs mut" style="margin-top:2px">${esc(i.p.ask || 'Данные')}: ${esc(i.note)}</div>` : ''}
           <div class="row between" style="margin-top:8px">
             ${maxQty(i.p) > 1 ? `<div class="stepper" style="transform:scale(.88);transform-origin:left"><button onclick="qtyC(${i.idx},-1)">−</button><span>${i.qty}</span><button onclick="qtyC(${i.idx},1)">+</button></div>` : '<span class="xs mut">1 шт.</span>'}
-            <b>${money(i.qty * (cur === 'RUB' ? i.p.price_rub : i.p.price_stars), cur)}</b></div></div>
+            <b>${money(r2(i.qty * priceIn(i.p, cur)), cur)}</b></div></div>
         <button class="x" onclick="delC(${i.idx})">✕</button></div>`).join('')}
-      <div class="sum total"><span>Итого</span><span>${money(cartSum(lines), cur)}</span></div>
-      <button class="btn pri" style="margin-top:12px" onclick="go('checkout',{kind:'${kind}'})">Оформить · ${money(cartSum(lines), cur)}</button>
+      <div class="sum total"><span>Итого</span><span>${money(cartSum(lines, cur), cur)}</span></div>
+      <button class="btn pri" style="margin-top:12px" onclick="go('checkout',{kind:'${kind}'})">Оформить · ${money(cartSum(lines, cur), cur)}</button>
     </div>`;
   };
   const both = cartLines('digital').length && cartLines('physical').length;
   return `<div class="h1">Корзина</div>
-    ${both ? '<div class="info" style="margin-bottom:12px"><span>ℹ️</span><span>Цифровые товары и девайсы оформляются отдельно: по правилам Telegram цифровое оплачивается только звёздами.</span></div>' : ''}
-    ${group('digital', '🎮 Цифровые товары', 'оплата ⭐')}
-    ${group('physical', '📦 Девайсы и мерч', physPay().join(' или ') || 'оплата не подключена')}`;
+    ${both ? '<div class="info" style="margin-bottom:12px"><span>ℹ️</span><span>Цифровые товары и девайсы оформляются отдельно: для девайсов нужен адрес доставки.</span></div>' : ''}
+    ${group('digital', '🎮 Цифровые товары', S.data.payments.crypto && S.data.payments.cryptoDigital ? '⭐ или крипта' : 'оплата ⭐')}
+    ${group('physical', '📦 Девайсы и мерч', S.data.payments.crypto ? 'оплата криптой' : 'оплата не подключена')}`;
 };
 function qtyC(idx, d) { const i = S.cart[idx], p = P(i.id); i.qty = Math.max(1, Math.min(maxQty(p), i.qty + d)); haptic(); saveCart(); refresh(); }
 function delC(idx) { S.cart.splice(idx, 1); haptic(); saveCart(); refresh(); }
@@ -489,18 +492,21 @@ function delC(idx) { S.cart.splice(idx, 1); haptic(); saveCart(); refresh(); }
 V.checkout = (c) => {
   const kind = c.kind, lines = cartLines(kind);
   if (!lines.length) return '<div class="empty"><div class="ei">🛒</div>Нечего оформлять</div>';
-  const curr = kind === 'physical' ? 'RUB' : 'XTR';
-  const sub = cartSum(lines);
-  const disc = S.promo ? Math.floor(sub * S.promo.percent / 100) : 0;
-  const total = Math.max(1, sub - disc);
   const pay = S.data.payments;
-  if (kind === 'physical' && !c.method) c.method = pay.rub ? 'rub' : pay.crypto ? 'crypto' : null;
+  const canCrypto = pay.crypto && lines.every((i) => cryptoOk(i.p));
+  if (kind === 'physical') c.method = canCrypto ? 'crypto' : null;
+  else if (!c.method || (c.method === 'crypto' && !canCrypto)) c.method = 'stars';
+  const curr = c.method === 'stars' ? 'XTR' : 'USD';
+  const sub = cartSum(lines, curr);
+  const total = !S.promo ? sub : curr === 'XTR' ? Math.max(1, sub - Math.floor(sub * S.promo.percent / 100)) : Math.max(0.1, r2(sub * (100 - S.promo.percent) / 100));
+  const disc = r2(sub - total);
   const d = S.delivery;
+  const cryptoSub = `USDT, TON, BTC через CryptoBot${pay.cryptoTestnet ? ' · тестовая сеть' : ''}`;
   const method = (k, icon, title, sub, on) => `<button class="method ${c.method === k ? 'on' : ''}" ${on ? `onclick="cur().method='${k}';haptic();refresh()"` : 'disabled style="opacity:.45"'}>
       <div class="mi">${icon}</div><div class="grow"><b>${title}</b><div class="xs mut">${on ? sub : 'Не подключено владельцем'}</div></div><div class="radio"></div></button>`;
   return `<div class="h1">Оформление</div>
     <div class="card">
-      ${lines.map((i) => `<div class="sum"><span class="grow" style="padding-right:10px">${esc(i.p.emoji)} ${esc(i.p.title)}${i.qty > 1 ? ` ×${i.qty}` : ''}</span><span>${money(i.qty * (curr === 'RUB' ? i.p.price_rub : i.p.price_stars), curr)}</span></div>`).join('')}
+      ${lines.map((i) => `<div class="sum"><span class="grow" style="padding-right:10px">${esc(i.p.emoji)} ${esc(i.p.title)}${i.qty > 1 ? ` ×${i.qty}` : ''}</span><span>${money(r2(i.qty * priceIn(i.p, curr)), curr)}</span></div>`).join('')}
       ${disc ? `<div class="sum" style="color:#4ade80"><span>Промокод ${esc(S.promo.code)} −${S.promo.percent}%</span><span>−${money(disc, curr)}</span></div>` : ''}
       <div class="sum total"><span>К оплате</span><span>${money(total, curr)}</span></div>
     </div>
@@ -515,14 +521,12 @@ V.checkout = (c) => {
       <label class="label">Адрес или пункт выдачи *</label><textarea id="d-address" rows="2" style="min-height:60px">${esc(d.address || '')}</textarea>
       <label class="label">Комментарий</label><input id="d-comment" value="${esc(d.comment || '')}" placeholder="Необязательно">
       <div class="h2">Оплата</div>
-      ${pay.rub ? method('rub', '💳', 'Банковская карта', 'ЮKassa · тестовый режим', true) : ''}
-      ${pay.crypto ? method('crypto', '₿', 'Криптовалюта', `USDT, TON, BTC через CryptoBot${pay.cryptoTestnet ? ' · тестовая сеть' : ''}`, true) : ''}
-      ${!pay.rub && !pay.crypto ? '<div class="card mut sm">Оплата девайсов пока не подключена.</div>' : ''}
+      ${canCrypto ? method('crypto', '₿', 'Криптовалюта', cryptoSub, true) : '<div class="card mut sm">Оплата девайсов пока не подключена.</div>'}
     ` : `
       <div class="h2">Оплата</div>
-      <div class="method on"><div class="mi">⭐</div><div class="grow"><b>Telegram Stars</b><div class="xs mut">Звёзды покупаются прямо в Telegram</div></div><div class="radio"></div></div>
-      <div class="xs dim" style="margin-top:8px">По правилам Telegram цифровые товары в ботах оплачиваются только звёздами.</div>`}
-    <div class="sticky"><button class="btn pri" id="paybtn" onclick="payNow('${kind}')" ${kind === 'physical' && !c.method ? 'disabled' : ''}>Оплатить ${money(total, curr)}</button></div>`;
+      ${method('stars', '⭐', 'Telegram Stars', 'Звёзды покупаются прямо в Telegram', true)}
+      ${canCrypto ? method('crypto', '₿', 'Криптовалюта', cryptoSub, true) : ''}`}
+    <div class="sticky"><button class="btn pri" id="paybtn" onclick="payNow('${kind}')" ${!c.method ? 'disabled' : ''}>Оплатить ${money(total, curr)}</button></div>`;
 };
 function readDelivery() {
   ['name', 'phone', 'address', 'comment'].forEach((k) => { const el = $('#d-' + k); if (el) S.delivery[k] = el.value.trim(); });
@@ -539,7 +543,8 @@ async function payNow(kind) {
   const c = cur(), btn = $('#paybtn');
   const lines = cartLines(kind);
   const body = { kind, items: lines.map((i) => ({ id: i.id, qty: i.qty, note: i.note })), promo: S.promo ? S.promo.code : null };
-  if (kind === 'physical') { readDelivery(); body.delivery = S.delivery; body.method = c.method; }
+  body.method = c.method;
+  if (kind === 'physical') { readDelivery(); body.delivery = S.delivery; }
   btn.disabled = true; btn.textContent = 'Создаём счёт…';
   try {
     const r = await api('checkout', body);
@@ -625,7 +630,7 @@ function itemsCard(o) {
   return `<div class="card">${o.items.map((i) => `<div class="sum"><span class="grow" style="padding-right:10px">${esc(i.emoji || '')} ${esc(i.title)}${i.qty > 1 ? ` ×${i.qty}` : ''}${i.note ? `<div class="xs mut">${esc(i.ask || 'Данные')}: ${esc(i.note)}</div>` : ''}</span><span>${money(i.price * i.qty, o.currency)}</span></div>`).join('')}
     ${o.discount ? `<div class="sum" style="color:#4ade80"><span>Промокод ${esc(o.promo)}</span><span>−${money(o.discount, o.currency)}</span></div>` : ''}
     <div class="sum total"><span>Итого</span><span>${money(o.total, o.currency)}</span></div>
-    <div class="xs dim" style="margin-top:6px">${{ stars: '⭐ Telegram Stars', rub: '💳 Карта (ЮKassa)', crypto: '₿ Крипта (CryptoBot)' }[o.method] || ''} · ${dateStr(o.created_at)}</div></div>`;
+    <div class="xs dim" style="margin-top:6px">${{ stars: '⭐ Telegram Stars', crypto: '₿ Крипта (CryptoBot)' }[o.method] || ''} · ${dateStr(o.created_at)}</div></div>`;
 }
 function chatBlock(c, role) {
   const o = c.data.order;
@@ -727,15 +732,14 @@ A.stats = async () => {
   const days = s.chart.map((_, i) => new Date((s.day - (6 - i) * 86400) * 1000).toLocaleDateString('ru-RU', { weekday: 'short' }));
   return `<div class="kpis">
       <div class="kpi hl"><span class="xs mut">Заказов сегодня</span><b>${s.today}</b></div>
-      <div class="kpi hl"><span class="xs mut">Сегодня</span><b style="font-size:15px">${td('stars')} ⭐ · ${num(td('rub') + td('crypto'))} ₽</b></div>
+      <div class="kpi hl"><span class="xs mut">Сегодня</span><b style="font-size:15px">${td('stars')} ⭐ · ${usd(td('crypto'))}</b></div>
       <div class="kpi" onclick="S.ordersFilter='active';S.adminTab='orders';render(true)"><span class="xs mut">В работе</span><b>${s.processing}</b></div>
       <div class="kpi" onclick="S.ordersFilter='active';S.adminTab='orders';render(true)"><span class="xs mut">Споры</span><b style="${s.dispute ? 'color:#f87171' : ''}">${s.dispute}</b></div>
     </div>
     <div class="h2">Выручка за всё время</div>
     <div class="card">
       <div class="sum"><span>⭐ Звёзды · ${by('stars').n || 0} зак.</span><b>${by('stars').sum || 0} ⭐</b></div>
-      ${S.data.payments.rub || by('rub').n ? `<div class="sum"><span>💳 Карта · ${by('rub').n || 0} зак.</span><b>${num(by('rub').sum)} ₽</b></div>` : ''}
-      <div class="sum"><span>₿ Крипта · ${by('crypto').n || 0} зак.</span><b>${num(by('crypto').sum)} ₽</b></div>
+      <div class="sum"><span>₿ Крипта · ${by('crypto').n || 0} зак.</span><b>${usd(by('crypto').sum)}</b></div>
       <div class="sum total"><span>Пользователей · покупателей</span><span>${s.users} · ${s.buyers}</span></div>
     </div>
     <div class="h2">Заказы за 7 дней</div>
@@ -766,7 +770,7 @@ V.aorder = (c) => {
   }
   const btns = [];
   if (['processing', 'delivered', 'dispute'].includes(o.status)) btns.push(`<button class="btn ok sm" onclick="adminAct('complete','Завершить заказ без подтверждения покупателя?')">Завершить</button>`);
-  if (['processing', 'delivered', 'completed', 'dispute'].includes(o.status)) btns.push(`<button class="btn bad sm" onclick="adminAct('refund','${o.method === 'stars' ? 'Вернуть звёзды покупателю? Это действие нельзя отменить.' : 'Отметить возврат? Деньги нужно вернуть вручную через платёжную систему.'}')">Вернуть деньги</button>`);
+  if (['processing', 'delivered', 'completed', 'dispute'].includes(o.status)) btns.push(`<button class="btn bad sm" onclick="adminAct('refund','${o.method === 'stars' ? 'Вернуть звёзды покупателю? Это действие нельзя отменить.' : 'Отметить возврат? Крипту нужно вернуть вручную через CryptoBot.'}')">Вернуть деньги</button>`);
   if (o.status === 'pending') btns.push(`<button class="btn ghost sm" onclick="adminAct('cancel','Отменить неоплаченный заказ?')">Отменить</button>`);
   return `<div class="row between"><div class="h1" style="margin:4px 0">Заказ #${o.id}</div><span class="st s-${o.status}">${STATUS[o.status]}</span></div>
     <div class="card sm" style="margin-top:12px">👤 ${esc(o.user_name)} · ${who}</div>
@@ -809,7 +813,7 @@ V.aproduct = async (c) => {
   if (!base) return '<div class="empty">Товар не найден</div>';
   c.kind = c.kind || base.kind;
   // черновик сохраняет введённое, когда форма перерисовывается
-  const p = c.draft || { ...base, price: base.kind === 'physical' ? base.price_rub : base.price_stars };
+  const p = c.draft || { ...base, price: base.price_stars, price_usd: base.price_usd };
   let stock = '';
   if (c.id && c.kind === 'digital_auto') {
     const st = await api('admin_stock', { product_id: c.id });
@@ -833,7 +837,10 @@ V.aproduct = async (c) => {
         <div><label class="label">Раздел</label><select id="f-section">${Object.entries(S.data.sections).map(([k, s]) => opt(k, s.title, p.section)).join('')}</select></div>
       </div>
       <div class="grid2">
-        <div><label class="label">${phys ? 'Цена, ₽ *' : 'Цена, ⭐ *'}</label><input id="f-price" type="number" min="1" value="${esc(p.price ?? '')}"></div>
+        ${phys ? '' : `<div><label class="label">Цена, ⭐ *</label><input id="f-price" type="number" min="1" value="${esc(p.price ?? '')}"></div>`}
+        <div><label class="label">${phys ? 'Цена, $ *' : 'Цена для крипты, $'}</label><input id="f-usd" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${phys ? '' : 'пусто — только звёзды'}" value="${esc(p.price_usd ?? '')}"></div>
+      </div>
+      <div class="grid2">
         <div><label class="label">Остаток</label>${c.kind === 'digital_auto' ? '<input disabled value="по складу ключей">' : `<input id="f-stock" type="number" min="0" placeholder="∞ без лимита" value="${p.stock ?? ''}">`}</div>
       </div>
       <label class="label">Что спросить у покупателя</label><input id="f-ask" value="${esc(p.ask || '')}" placeholder="Например: UID и сервер (пусто — не спрашивать)">
@@ -847,7 +854,8 @@ V.aproduct = async (c) => {
 function readDraft() {
   const v = (k) => { const el = $('#f-' + k); return el ? el.value : ''; };
   return {
-    emoji: v('emoji'), title: v('title'), game_id: v('game'), section: v('section'), price: v('price'),
+    emoji: v('emoji'), title: v('title'), game_id: v('game'), section: v('section'),
+    price: $('#f-price') ? v('price') : ((cur().draft ? cur().draft.price : (cur().base || {}).price_stars) ?? ''), price_usd: v('usd'),
     stock: $('#f-stock') ? v('stock') : (cur().draft || cur().base || {}).stock ?? '',
     ask: v('ask'), badge: v('badge'), description: v('desc'), active: $('#f-active').checked,
   };
@@ -857,7 +865,7 @@ function readForm(id) {
   const d = readDraft(), kind = cur().kind;
   return {
     id, kind, emoji: d.emoji, title: d.title, game_id: d.game_id, section: d.section,
-    price_stars: kind === 'physical' ? '' : d.price, price_rub: kind === 'physical' ? d.price : '',
+    price_stars: kind === 'physical' ? '' : d.price, price_usd: d.price_usd,
     stock: kind === 'digital_auto' ? '' : d.stock, ask: d.ask, badge: d.badge, description: d.description, active: d.active,
   };
 }
