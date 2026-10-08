@@ -7,279 +7,324 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Russo+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ── Токены ─────────────────────────────────────────── */
+/* ── Токены: тёмная и светлая тема (берётся из Telegram) ── */
 :root{
-  --bg:#10131c; --s1:#171b27; --s2:#1e2332; --s3:#272d40; --line:#2a3046;
-  --tx:#eceff7; --mut:#8b93ab; --dim:#5f6780;
-  --gold:#f5b83d; --gold-ink:#2b1d00;
-  --common:#8b93ab; --rare:#4da3ff; --epic:#a970ff; --legend:#f5b83d;
-  --ok:#3ddc97; --bad:#ff5c6c; --warn:#ffb547;
-  --disp:"Russo One",Manrope,system-ui,sans-serif;
+  --bg:#0f1012; --s1:#18191c; --s2:#212226; --s3:#2b2c31; --line:rgba(255,255,255,.07);
+  --tx:#f3f3f1; --tx2:#c9cacd; --mut:#8c8e95; --dim:#5d5f66;
+  --acc:#f0b43c; --acc-ink:#221600; --acc-tx:#f0b43c;
+  --legend:#f0b43c; --epic:#b391ff; --rare:#6cb0ff; --common:#8c8e95;
+  --ok:#3ccf91; --bad:#f2716d; --warn:#f5b83d;
+  --glass:rgba(15,16,18,.84); --shade:rgba(0,0,0,.6);
+  --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.25,1.55,.4,1);
+}
+[data-theme=light]{
+  --bg:#f4f4f1; --s1:#ffffff; --s2:#ececE8; --s3:#e1e1dc; --line:rgba(20,20,22,.08);
+  --tx:#141416; --tx2:#3b3c40; --mut:#6c6e75; --dim:#a3a5ab;
+  --acc:#f0b43c; --acc-ink:#221600; --acc-tx:#986600;
+  --legend:#c48700; --epic:#7a4cf0; --rare:#1d76d8; --common:#7c7f87;
+  --ok:#11a06e; --bad:#d9403b; --warn:#b97800;
+  --glass:rgba(244,244,241,.86); --shade:rgba(20,20,22,.32);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 Manrope,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-body{padding-bottom:calc(76px + env(safe-area-inset-bottom));min-height:100vh;overscroll-behavior-y:none}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 Onest,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .3s}
+body{padding-bottom:calc(78px + env(safe-area-inset-bottom));min-height:100vh;overscroll-behavior-y:none}
 button,input,textarea,select{font:inherit;color:inherit}
-button{cursor:pointer;border:0;background:none;padding:0}
-:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-svg.i.s{width:16px;height:16px} svg.i.l{width:26px;height:26px}
-input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;transition:border-color .15s}
-input:focus,textarea:focus,select:focus{border-color:var(--gold)}
+button{cursor:pointer;border:0;background:none;padding:0;text-align:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:8px}
+svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+svg.i.s{width:16px;height:16px} svg.i.l{width:28px;height:28px}
+input,textarea,select{width:100%;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:13px 15px;outline:none;transition:border-color .2s,background-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--acc)}
 input::placeholder,textarea::placeholder{color:var(--dim)}
-textarea{resize:vertical;min-height:84px}
-select{appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b93ab' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-#app{max-width:600px;margin:0 auto;padding:14px 16px 28px}
+textarea{resize:vertical;min-height:88px}
+select{appearance:none;padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238c8e95' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+#app{max-width:600px;margin:0 auto;padding:16px 18px 32px}
 .mut{color:var(--mut)} .dim{color:var(--dim)} .sm{font-size:13px} .xs{font-size:12px}
 .row{display:flex;align-items:center;gap:10px} .between{justify-content:space-between} .grow{flex:1;min-width:0}
 .pre{white-space:pre-wrap;word-break:break-word}
-.disp{font-family:var(--disp);font-weight:400;letter-spacing:.01em}
+.num{font-variant-numeric:tabular-nums}
+.xtr{color:var(--acc);font-size:.92em}
 
-/* ── Заголовки ─────────────────────────────────────── */
-.title{font:400 26px/1.15 var(--disp);margin:6px 0 16px}
-.sec{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px}
-.sec h2{font:400 17px/1.2 var(--disp);margin:0}
+/* ── Мягкие нажатия ── */
+.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard{position:relative;transition:transform .5s var(--spring),background-color .2s,color .2s,box-shadow .2s,opacity .2s}
+.pressed{transform:scale(.965)!important;transition-duration:.14s!important}
+.btn,.it,.pay,.ocard,.pill{overflow:hidden;isolation:isolate}
+.rpl{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.13;transform:scale(0);animation:rpl .65s var(--ease) forwards;z-index:-1}
+@keyframes rpl{to{transform:scale(1);opacity:0}}
+.pg{animation:pgIn .34s var(--ease) both}
+.pg.a-fwd{--dx:18px;--dy:0} .pg.a-back{--dx:-18px;--dy:0} .pg.a-tab{--dx:0;--dy:8px}
+@keyframes pgIn{from{opacity:0;transform:translate(var(--dx,0),var(--dy,0))}}
+
+/* ── Типографика ── */
+.title{font-size:30px;line-height:1.08;font-weight:800;letter-spacing:-.025em;margin:6px 0 18px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:30px 0 8px}
+.sec h2{font-size:19px;font-weight:750;letter-spacing:-.015em;margin:0}
 .sec span{font-size:13px;color:var(--mut)}
+.lead{color:var(--mut);margin:2px 0 18px;font-size:15px}
 
-/* ── Шапка магазина ────────────────────────────────── */
-.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.brand{font:400 28px/1 var(--disp);color:var(--gold);letter-spacing:.04em}
-.brand small{display:block;font:500 13px Manrope,system-ui,sans-serif;color:var(--mut);letter-spacing:0;margin-top:6px}
-.ava{width:40px;height:40px;border-radius:50%;background:var(--s3);display:grid;place-items:center;font-weight:800;overflow:hidden}
+/* ── Шапка ── */
+.hd{display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;letter-spacing:.06em}
+.logo i{width:20px;height:20px;border-radius:6px;background:var(--acc);position:relative;transform:rotate(-8deg)}
+.logo i:after{content:"";position:absolute;left:3px;right:3px;top:8px;height:2.5px;border-radius:2px;background:var(--acc-ink);opacity:.55}
+.ava{width:38px;height:38px;border-radius:50%;background:var(--s2);display:grid;place-items:center;font-weight:700;overflow:hidden;color:var(--tx2)}
 .ava img{width:100%;height:100%;object-fit:cover}
-.demo-note{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mut);margin:-4px 0 14px}
-.demo-note b{color:var(--tx);font-weight:600}
+.demo-note{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--mut);margin:0 0 16px}
+.demo-note svg{color:var(--acc-tx);margin-top:2px}
 .search{position:relative}
-.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--dim)}
-.search input{padding-left:44px;background:var(--s1);height:48px;border-radius:14px}
+.search svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--dim)}
+.search input{padding-left:46px;height:50px;border-radius:16px;border-color:transparent}
+.search input:focus{border-color:var(--acc)}
 
-/* ── Игры ──────────────────────────────────────────── */
-.games{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.game{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
-.game .gt{width:100%;aspect-ratio:1;border-radius:18px;display:grid;place-items:center;font:400 14px/1 var(--disp);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.35);position:relative;overflow:hidden;transition:transform .12s}
-.game .gt:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 2px,transparent 2px 9px)}
-.game .gt span{position:relative;padding:0 4px}
-.game .gn{font-size:12px;font-weight:600;color:var(--mut);line-height:1.2}
-.game:active .gt{transform:scale(.95)}
+/* ── Игры и категории ── */
+.games{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:4px 18px 6px;scroll-snap-type:x mandatory}
+.games::-webkit-scrollbar{display:none}
+.game{flex:none;width:72px;display:flex;flex-direction:column;align-items:center;gap:8px;scroll-snap-align:start}
+.gt{width:68px;height:68px;border-radius:22px;display:grid;place-items:center;color:#fff;font-weight:800;letter-spacing:.02em;text-align:center;line-height:1;padding:4px}
+.game .gn{font-size:12px;color:var(--mut);line-height:1.2;text-align:center}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:2px 18px}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex:none;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:var(--s1);font-size:14px;font-weight:600;white-space:nowrap;color:var(--tx2)}
+.pill svg{color:var(--mut)}
+.pill.on{background:var(--tx);color:var(--bg)} .pill.on svg{color:var(--bg)}
+.pill em{font-style:normal;opacity:.55;margin-left:2px}
 
-/* ── Категории ─────────────────────────────────────── */
-.cats{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
-.cats::-webkit-scrollbar{display:none}
-.cat{flex:none;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-size:14px;font-weight:600;white-space:nowrap}
-.cat svg{color:var(--gold)}
-.cat.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
-.cat.on svg{color:var(--bg)}
-
-/* ── Товар в списке ────────────────────────────────── */
-.item{--r:var(--common);display:flex;align-items:center;gap:13px;width:100%;padding:12px 14px 12px 12px;background:var(--s1);border-radius:16px;text-align:left;position:relative;overflow:hidden;transition:background .12s}
-.item:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--r)}
-.item:active{background:var(--s2)}
-.item+.item{margin-top:8px}
-.tile{--r:var(--common);flex:none;width:50px;height:50px;border-radius:14px;display:grid;place-items:center;color:var(--r);background:color-mix(in srgb,var(--r) 14%,var(--s2));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r) 28%,transparent)}
-.item .nm{font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.item .mt{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:4px;font-size:12px;color:var(--mut)}
-.item .mt .rb{color:var(--r);font-weight:700}
-.item .pr{flex:none;text-align:right;font:400 16px var(--disp);white-space:nowrap}
-.item .pr small{display:block;font:600 12px Manrope,system-ui,sans-serif;color:var(--mut);margin-top:2px}
+/* ── Список товаров ── */
+.it{--r:var(--common);display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:13px;width:100%;padding:12px 10px;margin:0 -10px;width:calc(100% + 20px);border-radius:16px}
+.it:active{background:var(--s1)}
+.it+.it:before{content:"";position:absolute;top:0;left:65px;right:10px;height:1px;background:var(--line)}
+.gl{--r:var(--common);width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:var(--r);background:var(--s1)}
+.it-t{display:block;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it-m{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;margin-top:3px;font-size:12.5px;color:var(--mut)}
+.it-p{text-align:right;white-space:nowrap}
+.it-p b{display:block;font-weight:700;font-variant-numeric:tabular-nums}
+.it-p small{display:block;font-size:12px;color:var(--mut);margin-top:1px}
+.hit{color:var(--acc-tx);font-weight:700}
+.tagr{--r:var(--common);color:var(--r);font-weight:700}
 .r-common{--r:var(--common)} .r-rare{--r:var(--rare)} .r-epic{--r:var(--epic)} .r-legend{--r:var(--legend)}
 .inl{display:inline-flex;align-items:center;gap:4px}
-svg.i.star{fill:var(--gold);stroke:none;color:var(--gold)}
+svg.i.star{fill:var(--acc);stroke:none}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 4px}
+.seg{display:inline-flex;padding:3px;border-radius:12px;background:var(--s1);gap:2px}
+.seg button{padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--mut);white-space:nowrap}
+.seg button.on{background:var(--s3);color:var(--tx)}
 
-/* ── Страница товара ───────────────────────────────── */
-.ph{display:flex;gap:16px;align-items:center;margin-bottom:18px}
-.ph .tile{width:76px;height:76px;border-radius:22px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r) 40%,transparent),0 10px 40px -12px var(--r)}
-.ph .tile svg{width:36px;height:36px}
-.ph .gm{font-size:13px;font-weight:600;color:var(--mut)}
-.ph h1{font:400 21px/1.2 var(--disp);margin:3px 0 0}
-.pricebox{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:16px;background:var(--s1);border-radius:16px}
-.pricebox .big{font:400 30px/1 var(--disp)}
-.pricebox .alt{font-size:13px;color:var(--mut);margin-top:6px}
-.pricebox .alt b{color:var(--tx)}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:800;color:var(--r);background:color-mix(in srgb,var(--r) 14%,transparent)}
-.facts{display:grid;gap:1px;background:var(--line);border-radius:16px;overflow:hidden;margin-top:10px}
-.fact{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;background:var(--s1);font-size:14px}
-.fact svg{color:var(--gold);margin-top:1px}
-.fact b{display:block;font-weight:700}
-.fact span{color:var(--mut);font-size:13px}
-.desc{padding:16px;background:var(--s1);border-radius:16px;margin-top:10px;color:#cfd4e2;white-space:pre-wrap}
-.field{margin-top:14px}
-.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
-.field label i{font-style:normal;color:var(--gold)}
+/* ── Товар ── */
+.crumb{font-size:13px;color:var(--mut)}
+.ph1{font-size:27px;line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:6px 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-size:12.5px;font-weight:700;background:var(--s1);color:var(--tx2)}
+.chip.r-legend,.chip.r-epic,.chip.r-rare{color:var(--r)}
+.price{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:22px 0 4px}
+.price b{font-size:38px;line-height:1;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.price span{font-size:14px;color:var(--mut)}
+.price span b{font-size:inherit;color:var(--tx);font-weight:700;letter-spacing:0}
+.facts{margin-top:18px;border-top:1px solid var(--line)}
+.fact{display:flex;gap:13px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+.fact svg{color:var(--acc-tx);margin-top:1px}
+.fact b{display:block;font-weight:650}
+.fact span{color:var(--mut);font-size:13.5px}
+.desc{color:var(--tx2);white-space:pre-wrap;margin-top:18px}
+.field{margin-top:16px}
+.field label{display:block;font-size:13px;font-weight:650;margin-bottom:7px;color:var(--tx2)}
+.field label i{font-style:normal;color:var(--acc-tx)}
 .field .hint{font-size:12px;color:var(--dim);margin-top:6px}
 
-/* ── Кнопки ────────────────────────────────────────── */
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:12px 18px;border-radius:14px;font-weight:800;font-size:15px;background:var(--s3);transition:transform .1s,opacity .15s}
-.btn:active{transform:scale(.97)}
-.btn.gold{background:var(--gold);color:var(--gold-ink)}
+/* ── Кнопки ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 18px;border-radius:16px;font-weight:700;font-size:15px;background:var(--s1);color:var(--tx)}
+.btn.acc{background:var(--acc);color:var(--acc-ink)}
 .btn.ok{background:var(--ok);color:#03271a}
-.btn.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
-.btn.line{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
-.btn.sm{min-height:40px;padding:8px 14px;font-size:13px;border-radius:11px;width:auto}
+.btn.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.btn.ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.btn.sm{min-height:40px;padding:8px 14px;font-size:13.5px;border-radius:12px;width:auto}
 .btn[disabled]{opacity:.4;pointer-events:none}
 .btns{display:flex;gap:8px}.btns>*{flex:1}
-.bar{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));margin:18px -16px 0;padding:14px 16px 12px;background:linear-gradient(180deg,transparent,var(--bg) 28%);z-index:5}
+.ic-btn{width:52px;height:52px;flex:none;border-radius:16px;display:grid;place-items:center;background:var(--s1)}
+.bar{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom));margin:22px -18px 0;padding:16px 18px 12px;background:linear-gradient(180deg,transparent,var(--bg) 30%);z-index:5}
 .bar .in{display:flex;gap:8px;align-items:center}
-.qty{display:inline-flex;align-items:center;background:var(--s2);border-radius:14px;height:50px}
+.qty{display:inline-flex;align-items:center;background:var(--s1);border-radius:16px;height:52px;flex:none}
 .qty button{width:40px;height:100%;display:grid;place-items:center;color:var(--mut)}
-.qty span{min-width:22px;text-align:center;font-weight:800}
+.qty span{min-width:22px;text-align:center;font-weight:700}
+.qty.mini{height:34px;border-radius:11px}
+.qty.mini button{width:32px}
 
-/* ── Отзывы ────────────────────────────────────────── */
-.rev{padding:14px;background:var(--s1);border-radius:14px}
-.rev+.rev{margin-top:8px}
-.stars{display:inline-flex;gap:1px;vertical-align:middle}
-.stars svg.i{width:14px;height:14px}
-
-/* ── Корзина и оформление ──────────────────────────── */
-.group{background:var(--s1);border-radius:18px;padding:14px;margin-bottom:12px}
-.group-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.group-h b{font:400 15px var(--disp)}
-.line{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
-.group-h+.line{border-top:0}
-.line .tile{width:42px;height:42px;border-radius:12px}
-.line .tile svg{width:18px;height:18px}
-.x{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--dim)}
-.mini-qty{display:inline-flex;align-items:center;background:var(--s2);border-radius:10px;height:34px}
-.mini-qty button{width:32px;height:100%;display:grid;place-items:center;color:var(--mut)}
-.mini-qty span{min-width:18px;text-align:center;font-weight:800;font-size:14px}
-.sum{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:14px}
-.sum.total{padding-top:12px;margin-top:8px;border-top:1px dashed var(--line);font-size:16px;font-weight:800}
-.sum.total span:last-child{font:400 18px var(--disp)}
-.pay{display:flex;align-items:center;gap:13px;width:100%;padding:14px;border-radius:16px;background:var(--s1);box-shadow:inset 0 0 0 1.5px var(--line);text-align:left}
+/* ── Блоки ── */
+.box{background:var(--s1);border-radius:18px;padding:16px}
+.box+.box{margin-top:10px}
+.sum{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:14.5px}
+.sum.total{padding-top:12px;margin-top:8px;border-top:1px solid var(--line);font-size:16px;font-weight:700}
+.sum.total span:last-child{font-size:20px;font-weight:800}
+.note{display:flex;gap:11px;padding:14px 0;font-size:14px;color:var(--tx2);border-bottom:1px solid var(--line)}
+.note svg{color:var(--acc-tx);margin-top:2px}
+.line{display:grid;grid-template-columns:42px 1fr auto;gap:12px;align-items:start;padding:13px 0}
+.line+.line{border-top:1px solid var(--line)}
+.pay{display:flex;align-items:center;gap:14px;width:100%;padding:15px;border-radius:18px;background:var(--s1);box-shadow:inset 0 0 0 1.5px transparent}
 .pay+.pay{margin-top:8px}
-.pay.on{box-shadow:inset 0 0 0 2px var(--gold);background:color-mix(in srgb,var(--gold) 6%,var(--s1))}
-.pay .pi{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--s2);color:var(--gold)}
-.pay b{display:block}
-.pay span{font-size:12px;color:var(--mut)}
-.radio{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--line);flex:none}
-.pay.on .radio{box-shadow:inset 0 0 0 7px var(--gold)}
+.pay.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.pay .pi{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--s2);color:var(--acc-tx)}
+.pay b{display:block;font-weight:650}
+.pay span{font-size:12.5px;color:var(--mut)}
+.radio{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--s3);flex:none;transition:box-shadow .35s var(--spring)}
+.pay.on .radio{box-shadow:inset 0 0 0 7px var(--acc)}
 
-/* ── Заказы ────────────────────────────────────────── */
-.order{display:block;width:100%;text-align:left;padding:14px;background:var(--s1);border-radius:16px}
-.order+.order{margin-top:8px}
-.order .oi{font-size:13px;color:var(--mut);margin:6px 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.st{--c:var(--mut);display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
-.st:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+/* ── Заказы ── */
+.ocard{display:block;width:100%;padding:15px 0;border-bottom:1px solid var(--line)}
+.ocard .oi{font-size:13.5px;color:var(--mut);margin:5px 0 8px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.st{--c:var(--mut);display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;white-space:nowrap;color:var(--c)}
+.st:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .s-pending{--c:var(--warn)} .s-paying,.s-processing{--c:var(--epic)} .s-delivered{--c:var(--rare)}
 .s-completed{--c:var(--ok)} .s-dispute{--c:var(--bad)} .s-refunded,.s-cancelled{--c:var(--dim)}
-.track{display:flex;gap:6px;margin:16px 0 6px}
-.track i{flex:1;height:5px;border-radius:5px;background:var(--s3)}
-.track i.on{background:var(--gold)}
-.track-l{display:flex;justify-content:space-between;font-size:11px;color:var(--dim)}
-.track-l span.on{color:var(--tx)}
-.note{display:flex;gap:10px;padding:13px 14px;background:var(--s1);border-radius:14px;font-size:14px;color:#cfd4e2;margin-top:12px}
-.note svg{color:var(--gold);margin-top:2px}
-.loot-card{padding:16px;background:var(--s1);border-radius:16px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold) 25%,transparent)}
-.kv{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:12px}
+.track{display:flex;gap:5px;margin:18px 0 7px}
+.track i{flex:1;height:4px;border-radius:4px;background:var(--s3);transition:background-color .4s}
+.track i.on{background:var(--acc)}
+.track-l{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim)}
+.track-l span.on{color:var(--tx2)}
+.loot-card{padding:6px 0}
+.kv{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--s1);border-radius:14px}
 .kv+.kv{margin-top:6px}
 .kv .k{font-size:12px;color:var(--mut)}
-.kv .v{font-weight:800;word-break:break-all}
-.copy{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--s3);color:var(--tx)}
+.kv .v{font-weight:700;word-break:break-all;font-variant-numeric:tabular-nums}
+.copy{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--s2);color:var(--tx2)}
 
-/* ── Чат ───────────────────────────────────────────── */
+/* ── Чат ── */
 .chat{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding:2px}
-.msg{max-width:82%;padding:9px 13px;border-radius:16px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.msg{max-width:82%;padding:9px 13px;border-radius:18px;font-size:14px;white-space:pre-wrap;word-break:break-word;animation:msgIn .35s var(--spring) both}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px) scale(.97)}}
 .msg .mt{font-size:10px;opacity:.6;margin-top:3px;text-align:right}
-.msg.me{align-self:flex-end;background:var(--gold);color:var(--gold-ink);border-bottom-right-radius:5px}
-.msg.them{align-self:flex-start;background:var(--s3);border-bottom-left-radius:5px}
-.msg.sys{align-self:center;background:transparent;color:var(--mut);font-size:13px;text-align:center}
+.msg.me{align-self:flex-end;background:var(--acc);color:var(--acc-ink);border-bottom-right-radius:6px}
+.msg.them{align-self:flex-start;background:var(--s2);border-bottom-left-radius:6px}
+.msg.sys{align-self:center;background:transparent;color:var(--mut);font-size:13px;text-align:center;animation:none}
 .chatin{display:flex;gap:8px;margin-top:10px}
-.chatin button{flex:none;width:48px;border-radius:12px;background:var(--gold);color:var(--gold-ink);display:grid;place-items:center}
+.chatin input{background:var(--s2)}
+.chatin button{flex:none;width:50px;border-radius:14px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center}
 
-/* ── Нижнее меню ───────────────────────────────────── */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+/* ── Нижнее меню ── */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
 .tabbar .in{display:flex;max-width:600px;margin:0 auto}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:11px;font-weight:700;color:var(--dim);position:relative;transition:color .15s}
-.tab svg.i{width:23px;height:23px}
-.tab.on{color:var(--gold)}
-.dot{position:absolute;top:2px;left:calc(50% + 7px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 4px;font-size:11px;font-weight:600;color:var(--dim)}
+.tab svg.i{width:24px;height:24px;transition:transform .5s var(--spring)}
+.tab.on{color:var(--tx)}
+.tab.on svg.i{transform:translateY(-1px) scale(1.06)}
+.tab:after{content:"";position:absolute;bottom:-2px;width:4px;height:4px;border-radius:50%;background:var(--acc);opacity:0;transform:scale(0);transition:all .4s var(--spring)}
+.tab.on:after{opacity:1;transform:none}
+.dot{position:absolute;top:1px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+.dot.pop{animation:pop .5s var(--spring)}
+@keyframes pop{0%{transform:scale(.4)}100%{transform:none}}
 
-/* ── Управление ────────────────────────────────────── */
-.adm-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:4px;background:var(--s1);border-radius:16px;margin-bottom:16px}
-.adm-tabs button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;border-radius:12px;font-size:11px;font-weight:700;color:var(--mut);position:relative}
-.adm-tabs button.on{background:var(--s3);color:var(--tx)}
-.adm-tabs .dot{top:3px;left:calc(50% + 6px)}
+/* ── Управление ── */
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kpi{padding:14px;background:var(--s1);border-radius:16px;text-align:left}
-.kpi .kl{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:6px}
-.kpi .kv2{font:400 24px/1.1 var(--disp);margin-top:8px}
-.kpi.hot{box-shadow:inset 0 0 0 1.5px var(--bad)}
+.kpi{padding:14px 15px;background:var(--s1);border-radius:18px;text-align:left}
+.kpi .kl{font-size:12.5px;color:var(--mut)}
+.kpi .kv2{font-size:24px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
 .kpi.hot .kv2{color:var(--bad)}
-.panel{background:var(--s1);border-radius:16px;padding:14px}
-.bars{display:flex;align-items:flex-end;gap:8px;height:110px}
-.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%}
-.bars i{width:100%;border-radius:6px;background:var(--s3);min-height:4px}
-.bars i.on{background:var(--gold)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:116px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+.bars i{width:100%;border-radius:7px;background:var(--s3);min-height:4px;transform-origin:bottom;animation:grow .7s var(--ease) both}
+@keyframes grow{from{transform:scaleY(0)}}
+.bars i.on{background:var(--acc)}
 .bars span{font-size:11px;color:var(--dim)}
-.bars b{font-size:11px}
-.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);width:100%;text-align:left}
-.li:first-child{border-top:0}
-.li .tile{width:38px;height:38px;border-radius:11px}
-.li .tile svg{width:17px;height:17px}
-.switch{display:inline-block;position:relative;width:46px;height:28px;flex:none;border-radius:14px;background:var(--s3);transition:background .15s}
-.switch:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
-.switch.on{background:var(--ok)} .switch.on:after{transform:translateX(18px)}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:0 16px}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;padding:8px 13px;border-radius:10px;background:var(--s1);font-size:13px;font-weight:700;color:var(--mut);white-space:nowrap}
-.chip.on{background:var(--tx);color:var(--bg)}
-.chip em{font-style:normal;opacity:.6;margin-left:5px}
-.form-sec{display:block;background:var(--s1);border-radius:16px;padding:14px;margin-top:12px}
-.form-sec h3{font:400 14px var(--disp);margin:0 0 2px;color:var(--mut)}
-.form-sec>.field:first-of-type{margin-top:10px}
-.form-sec.row{display:flex;align-items:center}
+.bars b{font-size:11px;font-weight:700}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;width:100%;text-align:left}
+.li+.li{border-top:1px solid var(--line)}
+.li .gl{width:38px;height:38px;border-radius:12px;background:var(--s2)}
+.uav{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.role{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc-tx);margin-left:6px;vertical-align:1px}
+.switch{display:inline-block;width:48px;height:29px;flex:none;border-radius:15px;background:var(--s3)}
+.switch:after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .45s var(--spring)}
+.switch.on{background:var(--ok)} .switch.on:after{transform:translateX(19px)}
+.switch[disabled]{opacity:.4;pointer-events:none}
+.form-sec{background:var(--s1);border-radius:18px;padding:16px;margin-top:12px}
+.form-sec h3{font-size:15px;font-weight:700;margin:0}
+.form-sec>.field:first-of-type{margin-top:12px}
+.form-sec .field input,.form-sec .field textarea,.form-sec .field select{background:var(--s2);border-color:transparent}
+.form-sec .field input:focus,.form-sec .field textarea:focus{border-color:var(--acc)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .preview{pointer-events:none}
+.tl-day{font-size:13px;font-weight:700;color:var(--mut);margin:18px 0 4px}
+.tl{display:flex;gap:12px;padding:9px 0;align-items:flex-start}
+.tl .ti{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--s1);color:var(--mut);flex:none}
+.tl .ti.good{color:var(--ok)} .tl .ti.badc{color:var(--bad)} .tl .ti.adm{color:var(--acc-tx)}
+.tl .tt{font-size:14px;line-height:1.35;color:var(--tx2);word-break:break-word}
+.tl .tm{font-size:12px;color:var(--dim);margin-top:1px}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:16px;overflow:hidden;margin-top:16px}
+.stats4 div{background:var(--s1);padding:12px 8px;text-align:center}
+.stats4 b{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.stats4 span{font-size:11px;color:var(--mut)}
 
-/* ── Пустые экраны, загрузка, тосты ────────────────── */
-.empty{text-align:center;padding:56px 24px;color:var(--mut)}
-.empty .ic{width:72px;height:72px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;background:var(--s1);color:var(--gold)}
-.empty .ic svg.i{width:32px;height:32px}
-.empty b{display:block;color:var(--tx);font:400 18px var(--disp);margin-bottom:6px}
-.loader{display:grid;place-items:center;padding:90px 0}
-.loader i{width:34px;height:34px;border-radius:50%;border:3px solid var(--s3);border-top-color:var(--gold);animation:spin .8s linear infinite}
+/* ── Пустые экраны, загрузка, тосты ── */
+.empty{text-align:center;padding:60px 24px;color:var(--mut)}
+.empty .ic{width:64px;height:64px;margin:0 auto 16px;border-radius:22px;display:grid;place-items:center;background:var(--s1);color:var(--acc-tx)}
+.empty b{display:block;color:var(--tx);font-size:18px;font-weight:750;margin-bottom:6px}
+.loader{display:grid;place-items:center;padding:96px 0}
+.loader i{width:30px;height:30px;border-radius:50%;border:3px solid var(--s2);border-top-color:var(--acc);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-16px);opacity:0;z-index:60;max-width:calc(100% - 32px);display:flex;gap:8px;align-items:center;padding:12px 16px;border-radius:14px;background:var(--s3);font-size:14px;font-weight:700;box-shadow:0 12px 34px rgba(0,0,0,.45);transition:all .22s}
-.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-18px) scale(.96);opacity:0;z-index:80;max-width:calc(100% - 32px);display:flex;gap:8px;align-items:center;padding:12px 16px;border-radius:16px;background:var(--tx);color:var(--bg);font-size:14px;font-weight:600;box-shadow:0 14px 34px var(--shade);transition:all .45s var(--spring)}
+.toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
 .toast.ok svg{color:var(--ok)} .toast.err svg{color:var(--bad)}
-.guar{display:grid;gap:1px;background:var(--line);border-radius:16px;overflow:hidden}
-.guar div{display:flex;gap:14px;align-items:center;padding:14px;background:var(--s1)}
-.guar svg{color:var(--gold)}
-.guar b{display:block;font-size:14px}
-.guar span{font-size:13px;color:var(--mut)}
+.how .li{padding:14px 0}
+.how .li svg{color:var(--acc-tx)}
+.how b{display:block;font-weight:650}
+.how span{font-size:13.5px;color:var(--mut)}
 .rate{display:flex;gap:6px}
-.rate button svg.i{width:32px;height:32px;stroke:var(--dim);transition:transform .1s}
-.rate button.on svg.i{stroke:none;fill:var(--gold)}
-.rate button:active svg{transform:scale(1.2)}
+.rate button svg.i{width:32px;height:32px;stroke:var(--dim);transition:transform .45s var(--spring)}
+.rate button.on svg.i{stroke:none;fill:var(--acc)}
+.rate button.on svg.i{transform:scale(1.08)}
 
-/* ── Окно выдачи лута ──────────────────────────────── */
-.loot{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(5,7,12,.74);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .25s}
-.loot.show{opacity:1}
-.loot .sheet{position:relative;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;overflow-x:hidden;background:var(--s1);border-radius:26px 26px 0 0;padding:28px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(40px);transition:transform .35s cubic-bezier(.2,.9,.3,1.2)}
-.loot.show .sheet{transform:none}
-.loot .glow{position:absolute;left:50%;top:-110px;width:360px;height:260px;transform:translateX(-50%);background:radial-gradient(closest-side,color-mix(in srgb,var(--gold) 42%,transparent),transparent);pointer-events:none}
-.crate{position:relative;width:96px;height:96px;margin:0 auto 16px;border-radius:28px;display:grid;place-items:center;color:var(--gold-ink);background:var(--gold);box-shadow:0 18px 50px -14px var(--gold)}
-.crate svg.i{width:46px;height:46px;stroke-width:1.8}
-.crate:before,.crate:after{content:"";position:absolute;inset:-10px;border-radius:34px;border:2px solid var(--gold);opacity:0}
-.loot.show .crate{animation:pop .6s cubic-bezier(.2,1.6,.4,1) both}
-.loot.show .crate:before{animation:ring 1.1s .25s ease-out both}
-.loot.show .crate:after{animation:ring 1.1s .45s ease-out both}
-@keyframes pop{0%{transform:scale(.4) rotate(-14deg)}60%{transform:scale(1.08) rotate(4deg)}100%{transform:none}}
+/* ── Окно выдачи ── */
+.sheet-bg{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:var(--shade);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .3s}
+.sheet-bg.show{opacity:1}
+.sheet{position:relative;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;overflow-x:hidden;background:var(--bg);border-radius:28px 28px 0 0;padding:30px 20px calc(18px + env(safe-area-inset-bottom));transform:translateY(60px);transition:transform .5s var(--spring)}
+.sheet-bg.show .sheet{transform:none}
+.loot .glow{position:absolute;left:50%;top:-120px;width:380px;height:280px;transform:translateX(-50%);background:radial-gradient(closest-side,color-mix(in srgb,var(--acc) 40%,transparent),transparent);pointer-events:none}
+.crate{position:relative;width:92px;height:92px;margin:0 auto 18px;border-radius:28px;display:grid;place-items:center;color:var(--acc-ink);background:var(--acc)}
+.crate svg.i{width:44px;height:44px;stroke-width:1.7}
+.crate:before,.crate:after{content:"";position:absolute;inset:-10px;border-radius:34px;border:2px solid var(--acc);opacity:0}
+.show .crate{animation:crate .7s var(--spring) both}
+.show .crate:before{animation:ring 1.1s .25s ease-out both}
+.show .crate:after{animation:ring 1.1s .45s ease-out both}
+@keyframes crate{0%{transform:scale(.4) rotate(-14deg)}100%{transform:none}}
 @keyframes ring{0%{opacity:.8;transform:scale(.8)}100%{opacity:0;transform:scale(1.5)}}
-.loot h2{font:400 26px/1.15 var(--disp);text-align:center;margin:0}
-.loot .sub{text-align:center;color:var(--mut);font-size:14px;margin:6px 0 20px}
+.loot h2{font-size:28px;font-weight:800;letter-spacing:-.02em;text-align:center;margin:0}
+.loot .sub{text-align:center;color:var(--mut);font-size:14px;margin:6px 0 22px}
 .loot .vault{position:relative}
-.loot .kv{opacity:0;transform:translateY(8px);background:var(--s2)}
-.loot.show .kv{animation:reveal .4s ease-out forwards}
+.loot .kv{opacity:0;transform:translateY(8px)}
+.show .loot-in .kv{animation:reveal .45s var(--ease) forwards}
 @keyframes reveal{to{opacity:1;transform:none}}
-.loot .blk-t{font-size:13px;font-weight:700;color:var(--mut);margin:16px 0 8px}
+.loot .blk-t{font-size:13px;font-weight:650;color:var(--mut);margin:16px 0 8px}
 .loot .blk-t:first-of-type{margin-top:0}
-.stamp{position:absolute;right:58px;top:6px;z-index:2;padding:6px 14px;border:3px solid var(--bad);border-radius:10px;color:var(--bad);font:400 24px/1 var(--disp);letter-spacing:.14em;background:color-mix(in srgb,var(--s1) 55%,transparent);opacity:0;transform:rotate(-12deg);pointer-events:none}
-.loot.show .stamp{animation:stamp .4s 1s cubic-bezier(.2,1.5,.4,1) forwards}
+.stamp{position:absolute;right:58px;top:4px;z-index:2;padding:6px 14px;border:3px solid var(--bad);border-radius:10px;color:var(--bad);font-size:22px;font-weight:800;letter-spacing:.16em;background:color-mix(in srgb,var(--bg) 55%,transparent);opacity:0;transform:rotate(-12deg);pointer-events:none}
+.show .stamp{animation:stamp .45s 1s var(--spring) forwards}
 @keyframes stamp{0%{opacity:0;transform:rotate(-12deg) scale(2.4)}100%{opacity:.95;transform:rotate(-12deg) scale(1)}}
-.loot .demo{display:flex;gap:10px;margin-top:16px;padding:12px 14px;border-radius:14px;background:var(--s2);font-size:13px;color:var(--mut)}
-.loot .demo svg{color:var(--gold);margin-top:1px}
+.loot .demo{display:flex;gap:10px;margin-top:16px;font-size:13px;color:var(--mut)}
+.loot .demo svg{color:var(--acc-tx);margin-top:1px}
+
+/* ── Обучение ── */
+.onb .sheet{padding:26px 0 calc(18px + env(safe-area-inset-bottom));overflow:hidden}
+.onb-track{display:flex;transition:transform .55s var(--spring)}
+.onb-slide{flex:0 0 100%;padding:0 22px}
+.onb-art{height:178px;border-radius:24px;background:var(--s1);display:grid;place-items:center;margin-bottom:22px;overflow:hidden;pointer-events:none;position:relative}
+.onb h2{font-size:25px;line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}
+.onb p{margin:0;color:var(--tx2);font-size:15px}
+.onb p.dim{color:var(--mut);font-size:13.5px;margin-top:10px}
+.onb-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 22px 0}
+.dots{display:flex;gap:6px}
+.dots i{width:7px;height:7px;border-radius:4px;background:var(--s3);transition:all .45s var(--spring)}
+.dots i.on{width:22px;background:var(--acc)}
+.fan{position:relative;width:200px;height:110px}
+.fan .gt{position:absolute;top:18px;width:78px;height:78px;border-radius:24px;font-size:15px;box-shadow:0 12px 30px -10px rgba(0,0,0,.45)}
+.fan .gt:nth-child(1){left:6px;transform:rotate(-12deg)}
+.fan .gt:nth-child(2){left:61px;top:6px;z-index:2}
+.fan .gt:nth-child(3){left:116px;transform:rotate(12deg)}
+.mini{width:84%;background:var(--bg);border-radius:16px;padding:6px 12px}
+.mini .it{margin:0;width:100%}
+.mini .pay{padding:10px 12px;background:var(--bg)}
+.mini .pay+.pay{margin-top:6px}
+.onb-art .kv{width:84%;background:var(--bg)}
+.onb-art .stamp{opacity:.95;right:12%;top:30px;font-size:18px}
+.onb-art .btns{width:84%}
+.onb-art .seg{position:absolute;top:18px;right:8%}
 @media (prefers-reduced-motion:reduce){
   *,*:before,*:after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
   .loot .kv{opacity:1!important;transform:none!important}
@@ -320,7 +365,6 @@ const ICONS = {
   send: '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
   tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1"/>',
   mega: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
-  chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
   truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
   alert: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
   link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
@@ -334,6 +378,12 @@ const ICONS = {
   refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
   lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   flask: '<path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+  eye: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  sort: '<path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>',
+  grid: '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+  help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  activity: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+  arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
 };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 const SECTION_ICON = { accounts: 'user', currency: 'gem', items: 'sword', keys: 'key', boost: 'rocket', topup: 'wallet', gear: 'headphones' };
@@ -345,36 +395,60 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const r2 = (n) => Math.round(Number(n || 0) * 100) / 100;
 const usd = (n) => '$' + r2(n).toFixed(2).replace(/\.00$/, '');
-const money = (n, cur) => (cur === 'XTR' ? `${n} ⭐` : usd(n));
+const STAR = '<span class="xtr">★</span>';
+const money = (n, cur) => (cur === 'XTR' ? `${n}&nbsp;${STAR}` : usd(n));
 const priceOf = (p) => (p.kind === 'physical' ? usd(p.price_usd) : money(p.price_stars, 'XTR'));
 const priceIn = (p, cur) => (cur === 'XTR' ? p.price_stars : r2(p.price_usd));
 const cryptoOk = (p) => { const pay = (S.data && S.data.payments) || {}; return !!(pay.crypto && p.price_usd && (p.kind === 'physical' || pay.cryptoDigital)); };
 const dateStr = (t) => new Date(t * 1000).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const timeStr = (t) => new Date(t * 1000).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+const nowS = () => Math.floor(Date.now() / 1000);
+function ago(t) {
+  const d = nowS() - t;
+  if (d < 60) return 'только что';
+  if (d < 3600) return `${Math.floor(d / 60)} мин назад`;
+  if (d < 86400 && new Date(t * 1000).getDate() === new Date().getDate()) return `в ${timeStr(t)}`;
+  if (d < 172800) return `вчера в ${timeStr(t)}`;
+  return dateStr(t);
+}
+function dayLabel(t) {
+  const d = new Date(t * 1000), n = new Date();
+  const k = (x) => `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`;
+  const y = new Date(); y.setDate(n.getDate() - 1);
+  if (k(d) === k(n)) return 'Сегодня';
+  if (k(d) === k(y)) return 'Вчера';
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
 const haptic = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t); } catch (e) {} };
 const hapticN = (t = 'success') => { try { tg.HapticFeedback.notificationOccurred(t); } catch (e) {} };
+const hapticSel = () => { try { tg.HapticFeedback.selectionChanged(); } catch (e) {} };
 const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c; };
+const nItems = (n) => `${n} ${plural(n, 'товар', 'товара', 'товаров')}`;
 
 const STATUS = {
   pending: 'Ждёт оплаты', paying: 'Проверяем оплату', processing: 'В работе', delivered: 'Выдан',
   completed: 'Завершён', dispute: 'Спор', refunded: 'Возврат', cancelled: 'Отменён',
 };
-// Цвет товара — его «редкость», как в играх
 const RARITY = { 'хит': 'legend', 'редкое': 'epic', 'новинка': 'rare', 'выгодно': 'rare' };
 const rarity = (p) => (p.badge ? RARITY[String(p.badge).toLowerCase()] || 'rare' : 'common');
+const isHit = (p) => String(p.badge || '').toLowerCase() === 'хит';
 const KIND_TEXT = {
   digital_auto: ['Мгновенная выдача', 'Данные придут сразу после оплаты: сюда и в чат с ботом'],
   digital_manual: ['Выдаёт продавец', 'Обычно за 5–30 минут, следить можно в заказе'],
   service: ['Услуга', 'Продавец берёт заказ в работу и отчитывается в чате заказа'],
-  physical: ['Доставка', 'Отправим курьером или почтой, трек-номер появится в заказе'],
+  physical: ['Доставка', 'Курьером или почтой, трек-номер появится в заказе'],
 };
 const kindOf = (p) => (S.data && S.data.demoAuto ? 'digital_auto' : p.kind);
 
-const S = { data: null, cart: [], stack: [{ v: 'home' }], q: '', adminTab: 'stats', ordersFilter: 'active', delivery: {}, promo: null, prodFilter: 'all', prodQ: '', orderQ: '', counts: {} };
+const S = {
+  data: null, cart: [], stack: [{ v: 'home' }], q: '', sort: 'top', delivery: {}, promo: null, counts: {},
+  adminTab: 'stats', ordersFilter: 'active', prodFilter: 'all', prodQ: '', orderQ: '', people: 'users', peopleFilter: 'all', peopleQ: '',
+};
 let renderToken = 0;
 
-async function api(name, body) {
+async function api(name, body, opts) {
   const r = await fetch(`${API_URL}/api/${name}`, {
-    method: 'POST',
+    method: 'POST', keepalive: !!(opts && opts.keepalive),
     headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg ? tg.initData : '' },
     body: JSON.stringify(body || {}),
   }).catch(() => null);
@@ -384,13 +458,28 @@ async function api(name, body) {
   return d;
 }
 
+/* Журнал действий: события копятся и уходят на сервер пачкой */
+const evq = [];
+function track(type, data) {
+  evq.push({ type, data, t: nowS() });
+  if (evq.length >= 15) flushEvents();
+}
+function flushEvents(keepalive) {
+  if (!evq.length || !S.data) return;
+  const events = evq.splice(0, 25);
+  api('track', { events }, { keepalive }).catch(() => {});
+}
+setInterval(flushEvents, 5000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushEvents(true); });
+
 function toast(msg, type) {
+  document.querySelectorAll('.toast').forEach((x) => x.remove());
   const t = document.createElement('div');
   t.className = 'toast ' + (type || '');
   t.innerHTML = (type === 'err' ? ic('alert', 's') : type === 'ok' ? ic('check', 's') : '') + `<span>${esc(msg)}</span>`;
   document.body.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2600);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 2400);
 }
 const ask = (text) => new Promise((res) => {
   try { tg.showConfirm(text, (ok) => res(!!ok)); } catch (e) { res(confirm(text)); }
@@ -410,21 +499,47 @@ const store = {
   },
   set(k, v) { try { tg.CloudStorage.setItem(k, v); } catch (e) { try { localStorage.setItem(k, v); } catch (_) {} } },
 };
-const saveCart = () => { store.set('cart', JSON.stringify(S.cart)); renderTabbar(); };
-// какие окна выдачи покупатель уже видел
+const saveCart = () => { store.set('cart', JSON.stringify(S.cart)); renderTabbar(true); };
 const seen = {
   list() { try { return (localStorage.getItem('seen') || '').split(',').filter(Boolean); } catch (e) { return []; } },
   has(id) { return this.list().includes(String(id)); },
   add(id) { try { const a = this.list().slice(-200); a.push(String(id)); localStorage.setItem('seen', a.join(',')); } catch (e) {} },
 };
 
+/* ═══════════════ Тема и мягкие нажатия ═══════════════ */
+function applyTheme() {
+  const light = tg && tg.colorScheme === 'light';
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  try { tg.setHeaderColor(bg); tg.setBackgroundColor(bg); tg.setBottomBarColor && tg.setBottomBarColor(bg); } catch (e) {}
+}
+const PRESS = '.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.chatin button';
+let pressed = null;
+document.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest(PRESS);
+  if (!el || el.disabled) return;
+  pressed = el; el.classList.add('pressed');
+  if (getComputedStyle(el).overflow === 'hidden') {
+    const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2;
+    const s = document.createElement('span');
+    s.className = 'rpl';
+    s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+    el.appendChild(s); setTimeout(() => s.remove(), 700);
+  }
+}, { passive: true });
+const release = () => { if (pressed) { pressed.classList.remove('pressed'); pressed = null; } };
+['pointerup', 'pointercancel', 'pointerleave', 'scroll'].forEach((t) => document.addEventListener(t, release, { passive: true, capture: t === 'scroll' }));
+
 /* ═══════════════ Навигация ═══════════════ */
-function go(v, p) { haptic(); S.stack.push({ v, ...(p || {}) }); render(true); }
-function tab(v) { haptic(); S.stack = [{ v }]; render(true); }
-function back() { if ($('.loot')) return closeLoot(); if (S.stack.length > 1) { S.stack.pop(); render(true); } }
+function go(v, p) { haptic(); S.stack.push({ v, ...(p || {}) }); render(true, 'fwd'); }
+function tab(v) {
+  if (S.stack.length === 1 && S.stack[0].v === v) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  hapticSel(); S.stack = [{ v }]; track('tab', { name: v }); render(true, 'tab');
+}
+function back() { if ($('.sheet-bg')) return closeSheet(); if (S.stack.length > 1) { S.stack.pop(); render(true, 'back'); } }
 const cur = () => S.stack[S.stack.length - 1];
 
-async function render(scroll) {
+async function render(scroll, anim) {
   if (!tg || !S.data) return;
   const c = cur();
   try { S.stack.length > 1 ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {}
@@ -438,26 +553,28 @@ async function render(scroll) {
     if (token !== renderToken) return;
   } else html = out;
   const y = window.scrollY;
-  $('#app').innerHTML = html;
+  $('#app').innerHTML = `<div class="${anim ? 'pg a-' + anim : ''}">${html}</div>`;
   window.scrollTo(0, scroll ? 0 : y);
   const chat = $('.chat'); if (chat) chat.scrollTop = chat.scrollHeight;
 }
 const refresh = () => render(false);
 
-function renderTabbar() {
+let lastCartN = 0;
+function renderTabbar(bump) {
   if (!S.data) return;
   const root = S.stack[0].v;
   const n = S.cart.reduce((a, i) => a + i.qty, 0);
-  const tabs = [['home', 'game', 'Маркет'], ['cart', 'bag', 'Корзина', n], ['orders', 'box', 'Заказы']];
+  const tabs = [['home', 'grid', 'Маркет'], ['cart', 'bag', 'Корзина', n], ['orders', 'box', 'Заказы']];
   if (S.data.admin) tabs.push(['admin', 'shield', 'Управление', S.counts.attention]);
   $('#tabbar').innerHTML = tabs.map(([v, i, t, b]) =>
-    `<button class="tab ${root === v ? 'on' : ''}" onclick="tab('${v}')">${ic(i)}<span>${t}</span>${b ? `<span class="dot">${b}</span>` : ''}</button>`).join('');
+    `<button class="tab ${root === v ? 'on' : ''}" onclick="tab('${v}')">${ic(i)}<span>${t}</span>${b ? `<span class="dot ${bump && v === 'cart' && n > lastCartN ? 'pop' : ''}">${b}</span>` : ''}</button>`).join('');
+  lastCartN = n;
 }
 
 const loader = () => '<div class="loader"><i></i></div>';
-const errorBox = (m) => `<div class="empty"><div class="ic">${ic('alert')}</div><b>Не получилось загрузить</b>${esc(m)}<div style="margin-top:18px"><button class="btn sm line" style="margin:auto" onclick="render(true)">${ic('refresh', 's')} Обновить</button></div></div>`;
+const errorBox = (m) => `<div class="empty"><div class="ic">${ic('alert')}</div><b>Не получилось загрузить</b>${esc(m)}<div style="margin-top:18px"><button class="btn sm ghost" style="margin:auto" onclick="render(true)">${ic('refresh', 's')} Обновить</button></div></div>`;
 const empty = (icon, title, text, btn) => `<div class="empty"><div class="ic">${ic(icon)}</div><b>${title}</b>${text}${btn ? `<div style="margin-top:18px">${btn}</div>` : ''}</div>`;
-const stars = (n) => `<span class="stars">${[1, 2, 3, 4, 5].map((i) => `<svg class="i ${i <= n ? 'star' : ''}" viewBox="0 0 24 24" ${i <= n ? '' : 'style="stroke:var(--dim)"'}>${ICONS.star}</svg>`).join('')}</span>`;
+const stars = (n) => `<span class="inl" style="gap:1px">${[1, 2, 3, 4, 5].map((i) => `<svg class="i s ${i <= n ? 'star' : ''}" viewBox="0 0 24 24" style="width:14px;height:14px;${i <= n ? '' : 'stroke:var(--dim)'}">${ICONS.star}</svg>`).join('')}</span>`;
 
 /* ═══════════════ Каталог ═══════════════ */
 const P = (id) => S.data.products.find((p) => p.id === +id);
@@ -465,88 +582,109 @@ const G = (id) => S.data.games.find((g) => g.id === +id);
 const inStock = (p) => p.available === null || p.available > 0;
 const maxQty = (p) => (p.section === 'accounts' ? 1 : Math.max(1, Math.min(10, p.available === null ? 10 : p.available)));
 const where = (p) => { const g = p.game_id && G(p.game_id); return g ? g.title : ((S.data.sections[p.section] || {}).title || ''); };
-function monogram(g) {
+function gameTile(g, size) {
   const s = (g.short || g.title).trim();
-  return s.length <= 9 ? s : s.split(/\s+/).map((w) => w[0]).join('').slice(0, 3);
+  const fs = s.length <= 3 ? 19 : s.length <= 5 ? 15 : s.length <= 7 ? 12 : 10;
+  return `<span class="gt" style="background:${g.color1};font-size:${size ? Math.round(fs * size) : fs}px">${esc(s)}</span>`;
 }
+// хиты сверху; «сначала дешёвые» — строго по цене
+const priceKey = (p) => (p.kind === 'physical' ? 1e6 + (p.price_usd || 0) : p.price_stars || 0);
+function sortList(list) {
+  const a = [...list];
+  if (S.sort === 'price') return a.sort((x, y) => priceKey(x) - priceKey(y) || x.id - y.id);
+  return a.sort((x, y) => (isHit(y) - isHit(x)) || ((x.sort || 0) - (y.sort || 0)) || x.id - y.id);
+}
+const sortBar = (n) => `<div class="toolbar"><span class="sm mut">${nItems(n)}</span>
+  <div class="seg"><button class="${S.sort === 'top' ? 'on' : ''}" onclick="setSort('top')">Популярные</button><button class="${S.sort === 'price' ? 'on' : ''}" onclick="setSort('price')">Сначала дешёвые</button></div></div>`;
+function setSort(m) { if (S.sort === m) return; S.sort = m; hapticSel(); track('sort', { mode: m }); store.set('sort', m); render(false, 'tab'); }
 
 function itemRow(p, opts = {}) {
   const r = rarity(p);
   const meta = [];
-  if (p.badge) meta.push(`<span class="rb">${esc(p.badge)}</span>`);
+  if (p.badge) meta.push(isHit(p) ? `<span class="hit">Хит</span>` : `<span class="tagr r-${r}">${esc(p.badge)}</span>`);
   meta.push(`<span>${esc(opts.noWhere ? (S.data.sections[p.section] || {}).title : where(p))}</span>`);
-  if (kindOf(p) === 'digital_auto') meta.push(`<span class="inl" style="color:var(--gold)">${ic('zap', 's')}сразу</span>`);
+  if (kindOf(p) === 'digital_auto') meta.push(`<span class="inl">${ic('zap', 's')}сразу</span>`);
   if (!inStock(p)) meta.push('<span style="color:var(--bad)">нет в наличии</span>');
   else if (p.available !== null && p.available <= 3) meta.push(`<span>осталось ${p.available}</span>`);
   if (p.reviews) meta.push(`<span class="inl">${ic('star', 's star')}${p.rating}</span>`);
   const alt = p.kind !== 'physical' && cryptoOk(p) ? `<small>${usd(p.price_usd)}</small>` : '';
-  return `<button class="item r-${r}" onclick="go('product',{id:${p.id}})" ${inStock(p) ? '' : 'style="opacity:.55"'}>
-    <div class="tile r-${r}">${ic(secIcon(p.section))}</div>
-    <div class="grow"><div class="nm">${esc(p.title)}</div><div class="mt">${meta.join('')}</div></div>
-    <div class="pr">${priceOf(p)}${alt}</div></button>`;
+  return `<button class="it r-${r}" onclick="go('product',{id:${p.id}})" ${inStock(p) ? '' : 'style="opacity:.5"'}>
+    <span class="gl r-${r}">${ic(secIcon(p.section))}</span>
+    <span class="grow"><span class="it-t">${esc(p.title)}</span><span class="it-m">${meta.join('')}</span></span>
+    <span class="it-p"><b>${priceOf(p)}</b>${alt}</span></button>`;
 }
 
-/* ═══════════════ Экраны покупателя ═══════════════ */
+/* ═══════════════ Покупатель ═══════════════ */
 const V = {};
+let searchTimer = 0;
 
 V.home = () => {
   const d = S.data, u = (tg.initDataUnsafe && tg.initDataUnsafe.user) || {};
   const ava = u.photo_url ? `<img src="${esc(u.photo_url)}" alt="">` : esc((u.first_name || '?')[0]);
-  return `<div class="top"><div class="brand">${esc(d.shop.name)}<small>Аккаунты, валюта, ключи и буст для ваших игр</small></div><div class="ava">${ava}</div></div>
-  ${d.demoAuto ? `<div class="demo-note">${ic('flask', 's')}<span><b>Демо-магазин.</b> Товары вымышленные, после оплаты выдаются тестовые данные.</span></div>` : ''}
-  <div class="search">${ic('search')}<input id="q" placeholder="Найти: Robux, ключ, буст ранга" value="${esc(S.q)}" oninput="S.q=this.value;homeSearch()" enterkeyhint="search"></div>
+  return `<div class="hd"><div class="logo"><i></i>${esc(d.shop.name)}</div><div class="ava">${ava}</div></div>
+  <p class="lead">Аккаунты, валюта, ключи и буст для ваших игр</p>
+  ${d.demoAuto ? `<div class="demo-note">${ic('flask', 's')}<span>Демо-магазин: товары вымышленные, после оплаты приходят тестовые данные.</span></div>` : ''}
+  <div class="search">${ic('search')}<input id="q" placeholder="Robux, ключ, буст ранга" value="${esc(S.q)}" oninput="S.q=this.value;homeSearch()" enterkeyhint="search"></div>
   <div id="home-body">${homeBody(S.q.trim().toLowerCase())}</div>`;
 };
-function homeSearch() { $('#home-body').innerHTML = homeBody(S.q.trim().toLowerCase()); }
+function homeSearch() {
+  $('#home-body').innerHTML = homeBody(S.q.trim().toLowerCase());
+  clearTimeout(searchTimer);
+  const q = S.q.trim();
+  if (q.length >= 2) searchTimer = setTimeout(() => track('search', { q: q.slice(0, 60) }), 1500);
+}
 function homeBody(q) {
   const d = S.data;
   if (q) {
-    const res = d.products.filter((p) => (p.title + ' ' + (p.description || '') + ' ' + where(p)).toLowerCase().includes(q));
-    return `<div class="sec"><h2>Результаты</h2><span>${res.length} ${plural(res.length, 'товар', 'товара', 'товаров')}</span></div>` +
-      (res.length ? res.map((p) => itemRow(p)).join('') : empty('search', 'Ничего не нашли', 'Попробуйте название игры или товара покороче.'));
+    const res = sortList(d.products.filter((p) => (p.title + ' ' + (p.description || '') + ' ' + where(p)).toLowerCase().includes(q)));
+    return (res.length ? sortBar(res.length) + `<div>${res.map((p) => itemRow(p)).join('')}</div>` : empty('search', 'Ничего не нашли', 'Попробуйте название игры или товара покороче.'));
   }
   const cats = Object.entries(d.sections).filter(([k]) => d.products.some((p) => p.section === k));
-  const hits = d.products.filter((p) => p.badge && inStock(p)).slice(0, 6);
+  const hits = sortList(d.products.filter((p) => p.badge && inStock(p))).slice(0, 6);
   return `<div class="sec"><h2>Игры</h2></div>
-  <div class="games">${d.games.map((g) => `<button class="game" onclick="go('game',{id:${g.id}})"><span class="gt" style="background:linear-gradient(150deg,${g.color1},${g.color2})"><span>${esc(monogram(g))}</span></span><span class="gn">${esc(g.title)}</span></button>`).join('')}</div>
-  <div class="sec"><h2>Что ищете</h2></div>
-  <div class="cats">${cats.map(([k, s]) => `<button class="cat" onclick="go('section',{key:'${k}'})">${ic(secIcon(k), 's')}${esc(s.title)}</button>`).join('')}</div>
-  ${hits.length ? `<div class="sec"><h2>Сейчас берут</h2></div>${hits.map((p) => itemRow(p)).join('')}` : ''}
+  <div class="games">${d.games.map((g) => `<button class="game" onclick="openGame(${g.id})">${gameTile(g)}<span class="gn">${esc(g.title)}</span></button>`).join('')}</div>
+  <div class="sec"><h2>Категории</h2></div>
+  <div class="pills">${cats.map(([k, s]) => `<button class="pill" onclick="openSection('${k}')">${ic(secIcon(k), 's')}${esc(s.title)}</button>`).join('')}</div>
+  ${hits.length ? `<div class="sec"><h2>Сейчас берут</h2></div><div>${hits.map((p) => itemRow(p)).join('')}</div>` : ''}
   <div class="sec"><h2>Как это работает</h2></div>
-  <div class="guar">
-    <div>${ic('zap', 'l')}<p style="margin:0"><b>Выдача за секунды</b><span>Данные приходят сразу после оплаты, в любое время суток</span></p></div>
-    <div>${ic('lock', 'l')}<p style="margin:0"><b>Сделка под защитой</b><span>Заказ закрывается, только когда вы подтвердите получение</span></p></div>
-    <div>${ic('chat', 'l')}<p style="margin:0"><b>Продавец на связи</b><span>Чат внутри каждого заказа, ответ приходит в Telegram</span></p></div>
-  </div>`;
+  <div class="how">
+    <div class="li">${ic('zap', 'l')}<div class="grow"><b>Выдача за секунды</b><span>Данные приходят сразу после оплаты, в любое время</span></div></div>
+    <div class="li">${ic('lock', 'l')}<div class="grow"><b>Сделка под защитой</b><span>Заказ закрывается, только когда вы подтвердите получение</span></div></div>
+    <div class="li">${ic('chat', 'l')}<div class="grow"><b>Продавец на связи</b><span>Чат в каждом заказе, ответы приходят в Telegram</span></div></div>
+  </div>
+  <button class="btn ghost" style="margin-top:14px" onclick="openOnboarding()">${ic('help', 's')} Как здесь всё устроено</button>`;
 }
+function openGame(id) { const g = G(id); track('view_game', { id, title: g.title }); go('game', { id }); }
+function openSection(k) { track('view_section', { key: k, title: S.data.sections[k].title }); go('section', { key: k }); }
 
 V.game = (c) => {
   const g = G(c.id);
   const list = S.data.products.filter((p) => p.game_id === g.id);
   const secs = Object.keys(S.data.sections).filter((k) => list.some((p) => p.section === k));
   const f = c.sec && secs.includes(c.sec) ? c.sec : null;
-  const shown = f ? list.filter((p) => p.section === f) : list;
-  return `<div class="ph"><div style="width:76px;height:76px;flex:none;border-radius:22px;display:grid;place-items:center;font:400 13px var(--disp);color:#fff;text-align:center;padding:4px;background:linear-gradient(150deg,${g.color1},${g.color2})">${esc(monogram(g))}</div>
-      <div><div class="gm">${list.length} ${plural(list.length, 'товар', 'товара', 'товаров')}</div><h1>${esc(g.title)}</h1></div></div>
-    <div class="cats" style="margin-bottom:14px">
-      <button class="cat ${f ? '' : 'on'}" onclick="cur().sec=null;refresh()">Всё</button>
-      ${secs.map((k) => `<button class="cat ${f === k ? 'on' : ''}" onclick="cur().sec='${k}';refresh()">${ic(secIcon(k), 's')}${esc(S.data.sections[k].title)}</button>`).join('')}
-    </div>
-    ${shown.map((p) => itemRow(p, { noWhere: true })).join('') || empty('box', 'Пока пусто', 'В этом разделе ещё нет товаров.')}`;
+  const shown = sortList(f ? list.filter((p) => p.section === f) : list);
+  return `<div class="row" style="gap:16px;margin:4px 0 18px">${gameTile(g, 0.9)}<div><div class="crumb">Игра</div><div class="ph1" style="margin:2px 0 0">${esc(g.title)}</div></div></div>
+    ${secs.length > 1 ? `<div class="pills">
+      <button class="pill ${f ? '' : 'on'}" onclick="cur().sec=null;hapticSel();render(false,'tab')">Всё</button>
+      ${secs.map((k) => `<button class="pill ${f === k ? 'on' : ''}" onclick="cur().sec='${k}';hapticSel();render(false,'tab')">${ic(secIcon(k), 's')}${esc(S.data.sections[k].title)}</button>`).join('')}
+    </div>` : ''}
+    ${sortBar(shown.length)}
+    <div>${shown.map((p) => itemRow(p, { noWhere: true })).join('') || empty('box', 'Пока пусто', 'В этом разделе ещё нет товаров.')}</div>`;
 };
 
 V.section = (c) => {
   const s = S.data.sections[c.key];
-  const list = S.data.products.filter((p) => p.section === c.key);
-  return `<div class="ph"><div class="tile r-legend" style="width:64px;height:64px;border-radius:20px">${ic(secIcon(c.key), 'l')}</div>
-      <div><div class="gm">${list.length} ${plural(list.length, 'товар', 'товара', 'товаров')}</div><h1>${esc(s.title)}</h1></div></div>
-    ${c.key === 'gear' ? `<div class="note" style="margin:0 0 12px">${ic('truck', 's')}<span>Физические товары с доставкой${S.data.payments.crypto ? ', оплата криптой' : ''}.</span></div>` : ''}
-    ${list.map((p) => itemRow(p)).join('') || empty('box', 'Пока пусто', 'Здесь появятся товары.')}`;
+  const list = sortList(S.data.products.filter((p) => p.section === c.key));
+  return `<div class="crumb">Категория</div><div class="title" style="margin-top:2px">${esc(s.title)}</div>
+    ${c.key === 'gear' ? `<div class="demo-note" style="margin:-8px 0 6px">${ic('truck', 's')}<span>Физические товары с доставкой${S.data.payments.crypto ? ', оплата криптой' : ''}.</span></div>` : ''}
+    ${sortBar(list.length)}
+    <div>${list.map((p) => itemRow(p)).join('') || empty('box', 'Пока пусто', 'Здесь появятся товары.')}</div>`;
 };
 
 V.product = (c) => {
   const p = P(c.id);
-  if (!p) return empty('box', 'Товар снят с продажи', 'Посмотрите другие товары в маркете.', `<button class="btn sm gold" style="margin:auto" onclick="tab('home')">В маркет</button>`);
+  if (!p) return empty('box', 'Товар снят с продажи', 'Посмотрите другие товары в маркете.', `<button class="btn sm acc" style="margin:auto" onclick="tab('home')">В маркет</button>`);
+  if (!c.tracked) { c.tracked = true; track('view_product', { id: p.id, title: p.title }); }
   const r = rarity(p);
   c.qty = Math.min(c.qty || 1, maxQty(p));
   if (!c.revLoaded) {
@@ -556,11 +694,10 @@ V.product = (c) => {
   const [kt, ks] = KIND_TEXT[kindOf(p)];
   const revs = c.reviews || [];
   const stock = p.available === null ? null : inStock(p) ? `В наличии ${p.available} шт.` : 'Нет в наличии';
-  return `<div class="ph r-${r}"><div class="tile r-${r}">${ic(secIcon(p.section))}</div>
-      <div class="grow"><div class="gm">${esc(where(p))}</div><h1>${esc(p.title)}</h1></div></div>
-    <div class="pricebox"><div><div class="big">${priceOf(p)}</div>
-      ${p.kind !== 'physical' && cryptoOk(p) ? `<div class="alt">или <b>${usd(p.price_usd)}</b> в крипте</div>` : ''}</div>
-      <div style="text-align:right">${p.badge ? `<span class="badge r-${r}">${esc(p.badge)}</span>` : ''}${p.reviews ? `<div class="xs mut" style="margin-top:8px">${stars(Math.round(p.rating))} ${p.rating}</div>` : ''}</div></div>
+  return `<div class="crumb">${esc(where(p))}, ${esc((S.data.sections[p.section] || {}).title || '').toLowerCase()}</div>
+    <div class="ph1">${esc(p.title)}</div>
+    <div class="chips">${p.badge ? `<span class="chip r-${r}">${isHit(p) ? ic('star', 's star') : ''}${esc(p.badge)}</span>` : ''}${kindOf(p) === 'digital_auto' ? `<span class="chip">${ic('zap', 's')}Мгновенно</span>` : ''}${p.reviews ? `<span class="chip">${ic('star', 's star')}${p.rating}</span>` : ''}</div>
+    <div class="price"><b>${priceOf(p)}</b>${p.kind !== 'physical' && cryptoOk(p) ? `<span>или <b>${usd(p.price_usd)}</b> в крипте</span>` : ''}</div>
     <div class="facts">
       <div class="fact">${ic(kindOf(p) === 'digital_auto' ? 'zap' : p.kind === 'physical' ? 'truck' : 'user')}<div><b>${kt}</b><span>${ks}</span></div></div>
       <div class="fact">${ic('lock')}<div><b>Гарантия сделки</b><span>Если что-то не так, откройте спор: продавец разберётся или вернёт деньги</span></div></div>
@@ -569,16 +706,16 @@ V.product = (c) => {
     ${p.description ? `<div class="desc">${esc(p.description)}</div>` : ''}
     ${p.ask ? `<div class="field"><label>${esc(p.ask)} <i>*</i></label><input id="note" value="${esc(c.note || '')}" oninput="cur().note=this.value" placeholder="Без этого продавец не сможет выполнить заказ"></div>` : ''}
     ${inStock(p) ? `<div class="bar"><div class="in">
-        ${maxQty(p) > 1 ? `<div class="qty"><button onclick="qtyP(-1)" aria-label="Меньше">${ic('minus', 's')}</button><span>${c.qty}</span><button onclick="qtyP(1)" aria-label="Больше">${ic('plus', 's')}</button></div>` : ''}
-        <button class="btn line" onclick="addToCart(false)" aria-label="В корзину" style="width:56px;flex:none">${ic('bag')}</button>
-        <button class="btn gold" onclick="addToCart(true)">Купить</button>
-      </div></div>` : '<button class="btn" style="margin-top:16px" disabled>Нет в наличии</button>'}
+        ${maxQty(p) > 1 ? `<div class="qty"><button onclick="qtyP(-1)" aria-label="Меньше">${ic('minus', 's')}</button><span class="num">${c.qty}</span><button onclick="qtyP(1)" aria-label="Больше">${ic('plus', 's')}</button></div>` : ''}
+        <button class="ic-btn" onclick="addToCart(false)" aria-label="В корзину">${ic('bag')}</button>
+        <button class="btn acc" onclick="addToCart(true)">Купить</button>
+      </div></div>` : '<button class="btn" style="margin-top:18px" disabled>Нет в наличии</button>'}
     <div class="sec"><h2>Отзывы</h2><span>${revs.length || ''}</span></div>
-    ${revs.length ? revs.map((x) => `<div class="rev"><div class="row between"><b>${esc(x.user_name)}</b>${stars(x.rating)}</div>${x.text ? `<div class="sm pre" style="margin-top:6px;color:#cfd4e2">${esc(x.text)}</div>` : ''}<div class="xs dim" style="margin-top:6px">${dateStr(x.created_at)}</div></div>`).join('')
-      : '<div class="rev sm mut">Отзывов пока нет. Оставить отзыв можно после завершения заказа.</div>'}
-    ${S.data.admin ? `<button class="btn sm line" style="margin:18px auto 0" onclick="shareProduct(${p.id})">${ic('link', 's')} Скопировать ссылку на товар</button>` : ''}`;
+    ${revs.length ? revs.map((x) => `<div class="li" style="display:block"><div class="row between"><b>${esc(x.user_name)}</b>${stars(x.rating)}</div>${x.text ? `<div class="sm pre" style="margin-top:4px;color:var(--tx2)">${esc(x.text)}</div>` : ''}<div class="xs dim" style="margin-top:4px">${dateStr(x.created_at)}</div></div>`).join('')
+      : '<p class="sm mut" style="margin:4px 0">Отзывов пока нет. Оставить отзыв можно после завершения заказа.</p>'}
+    ${S.data.admin ? `<button class="btn sm ghost" style="margin:18px auto 0" onclick="shareProduct(${p.id})">${ic('link', 's')} Скопировать ссылку на товар</button>` : ''}`;
 };
-function qtyP(d) { const c = cur(), p = P(c.id); c.qty = Math.max(1, Math.min(maxQty(p), (c.qty || 1) + d)); haptic(); refresh(); }
+function qtyP(d) { const c = cur(), p = P(c.id); c.qty = Math.max(1, Math.min(maxQty(p), (c.qty || 1) + d)); hapticSel(); refresh(); }
 function addToCart(buyNow) {
   const c = cur(), p = P(c.id);
   const note = (c.note || '').trim();
@@ -586,8 +723,9 @@ function addToCart(buyNow) {
   const ex = S.cart.find((i) => i.id === p.id && (i.note || '') === note);
   if (ex) ex.qty = Math.min(maxQty(p), ex.qty + c.qty);
   else S.cart.push({ id: p.id, qty: c.qty, note });
+  track('cart_add', { id: p.id, title: p.title, qty: c.qty, buy: !!buyNow });
   saveCart(); hapticN();
-  if (buyNow) { S.stack = [{ v: 'cart' }, { v: 'checkout', kind: p.kind === 'physical' ? 'physical' : 'digital' }]; render(true); }
+  if (buyNow) { S.stack = [{ v: 'cart' }, { v: 'checkout', kind: p.kind === 'physical' ? 'physical' : 'digital' }]; render(true, 'fwd'); }
   else toast('Добавлено в корзину', 'ok');
 }
 function shareProduct(id) { copy(`https://t.me/${S.data.bot}?start=p_${id}`); }
@@ -599,38 +737,38 @@ const cartSum = (lines, cur) => r2(lines.reduce((a, i) => a + i.qty * priceIn(i.
 
 V.cart = () => {
   S.cart = S.cart.filter((i) => P(i.id));
-  if (!S.cart.length) return `<div class="title">Корзина</div>` + empty('bag', 'Корзина пуста', 'Загляните в маркет: там аккаунты, валюта и ключи.', `<button class="btn sm gold" style="margin:auto" onclick="tab('home')">Открыть маркет</button>`);
+  if (!S.cart.length) return `<div class="title">Корзина</div>` + empty('bag', 'Корзина пуста', 'Загляните в маркет: там аккаунты, валюта и ключи.', `<button class="btn sm acc" style="margin:auto" onclick="tab('home')">Открыть маркет</button>`);
   const pay = S.data.payments;
   const group = (kind, title, sub) => {
     const lines = cartLines(kind);
     if (!lines.length) return '';
     const cur = kind === 'physical' ? 'USD' : 'XTR';
-    return `<div class="group">
-      <div class="group-h"><b>${title}</b><span class="xs mut">${sub}</span></div>
+    return `<div class="sec" style="margin-top:6px"><h2>${title}</h2><span>${sub}</span></div>
       ${lines.map((i) => `<div class="line">
-        <div class="tile r-${rarity(i.p)}">${ic(secIcon(i.p.section))}</div>
-        <div class="grow"><div style="font-weight:700;font-size:14px;line-height:1.3">${esc(i.p.title)}</div>
+        <span class="gl r-${rarity(i.p)}">${ic(secIcon(i.p.section))}</span>
+        <div class="grow"><div style="font-weight:600;line-height:1.3">${esc(i.p.title)}</div>
           ${i.note ? `<div class="xs mut" style="margin-top:2px">${esc(i.p.ask || 'Данные')}: ${esc(i.note)}</div>` : ''}
           <div class="row between" style="margin-top:9px">
-            ${maxQty(i.p) > 1 ? `<div class="mini-qty"><button onclick="qtyC(${i.idx},-1)" aria-label="Меньше">${ic('minus', 's')}</button><span>${i.qty}</span><button onclick="qtyC(${i.idx},1)" aria-label="Больше">${ic('plus', 's')}</button></div>` : '<span class="xs mut">1 шт.</span>'}
-            <b class="disp">${money(r2(i.qty * priceIn(i.p, cur)), cur)}</b></div></div>
-        <button class="x" onclick="delC(${i.idx})" aria-label="Убрать">${ic('x', 's')}</button></div>`).join('')}
-      <button class="btn gold" style="margin-top:12px" onclick="go('checkout',{kind:'${kind}'})">Оформить на ${money(cartSum(lines, cur), cur)}</button>
-    </div>`;
+            ${maxQty(i.p) > 1 ? `<div class="qty mini"><button onclick="qtyC(${i.idx},-1)" aria-label="Меньше">${ic('minus', 's')}</button><span class="num">${i.qty}</span><button onclick="qtyC(${i.idx},1)" aria-label="Больше">${ic('plus', 's')}</button></div>` : '<span class="xs mut">1 шт.</span>'}
+            <b class="num">${money(r2(i.qty * priceIn(i.p, cur)), cur)}</b></div></div>
+        <button class="copy x" onclick="delC(${i.idx})" aria-label="Убрать" style="width:32px;height:32px;background:transparent;color:var(--dim)">${ic('x', 's')}</button></div>`).join('')}
+      <button class="btn acc" style="margin-top:10px" onclick="go('checkout',{kind:'${kind}'})">Оформить на ${money(cartSum(lines, cur), cur)}</button>`;
   };
   const both = cartLines('digital').length && cartLines('physical').length;
   return `<div class="title">Корзина</div>
-    ${both ? `<div class="note" style="margin:0 0 12px">${ic('alert', 's')}<span>Цифровые товары и девайсы оформляются отдельно: для девайсов нужен адрес доставки.</span></div>` : ''}
+    ${both ? `<div class="demo-note">${ic('alert', 's')}<span>Цифровые товары и девайсы оформляются отдельно: для девайсов нужен адрес доставки.</span></div>` : ''}
     ${group('digital', 'Цифровые товары', pay.crypto && pay.cryptoDigital ? 'звёзды или крипта' : 'оплата звёздами')}
+    ${cartLines('digital').length && cartLines('physical').length ? '<div style="height:18px"></div>' : ''}
     ${group('physical', 'Девайсы и мерч', pay.crypto ? 'оплата криптой' : 'оплата не подключена')}`;
 };
-function qtyC(idx, d) { const i = S.cart[idx], p = P(i.id); i.qty = Math.max(1, Math.min(maxQty(p), i.qty + d)); haptic(); saveCart(); refresh(); }
-function delC(idx) { S.cart.splice(idx, 1); haptic(); saveCart(); refresh(); }
+function qtyC(idx, d) { const i = S.cart[idx], p = P(i.id); i.qty = Math.max(1, Math.min(maxQty(p), i.qty + d)); hapticSel(); saveCart(); refresh(); }
+function delC(idx) { const p = P(S.cart[idx].id); track('cart_remove', { id: p.id, title: p.title }); S.cart.splice(idx, 1); haptic(); saveCart(); refresh(); }
 
 /* Оформление */
 V.checkout = (c) => {
   const kind = c.kind, lines = cartLines(kind);
   if (!lines.length) return empty('bag', 'Нечего оформлять', 'Корзина пуста.');
+  if (!c.tracked) { c.tracked = true; track('checkout_open', { kind, items: lines.length }); }
   const pay = S.data.payments;
   const canCrypto = pay.crypto && lines.every((i) => cryptoOk(i.p));
   if (kind === 'physical') c.method = canCrypto ? 'crypto' : null;
@@ -641,29 +779,29 @@ V.checkout = (c) => {
   const disc = r2(sub - total);
   const d = S.delivery;
   const cryptoSub = `USDT, TON или BTC через CryptoBot${pay.cryptoTestnet ? ', тестовая сеть' : ''}`;
-  const method = (k, icon, title, sub) => `<button class="pay ${c.method === k ? 'on' : ''}" onclick="cur().method='${k}';haptic();refresh()">
-      <div class="pi">${ic(icon)}</div><div class="grow"><b>${title}</b><span>${sub}</span></div><div class="radio"></div></button>`;
+  const method = (k, icon, title, sub) => `<button class="pay ${c.method === k ? 'on' : ''}" onclick="cur().method='${k}';hapticSel();refresh()">
+      <span class="pi">${ic(icon)}</span><span class="grow"><b>${title}</b><span>${sub}</span></span><span class="radio"></span></button>`;
   return `<div class="title">Оформление</div>
-    <div class="group">
-      ${lines.map((i) => `<div class="sum"><span class="grow">${esc(i.p.title)}${i.qty > 1 ? ` <span class="mut">×${i.qty}</span>` : ''}</span><span>${money(r2(i.qty * priceIn(i.p, curr)), curr)}</span></div>`).join('')}
-      ${disc ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(S.promo.code)}, −${S.promo.percent}%</span><span>−${money(disc, curr)}</span></div>` : ''}
-      <div class="sum total"><span>К оплате</span><span>${money(total, curr)}</span></div>
+    <div class="box">
+      ${lines.map((i) => `<div class="sum"><span class="grow">${esc(i.p.title)}${i.qty > 1 ? ` <span class="mut">×${i.qty}</span>` : ''}</span><span class="num">${money(r2(i.qty * priceIn(i.p, curr)), curr)}</span></div>`).join('')}
+      ${disc ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(S.promo.code)}, −${S.promo.percent}%</span><span class="num">−${money(disc, curr)}</span></div>` : ''}
+      <div class="sum total"><span>К оплате</span><span class="num">${money(total, curr)}</span></div>
     </div>
-    <div class="field" style="margin-top:4px"><label>Промокод</label>
+    <div class="field"><label>Промокод</label>
       <div class="row">${S.promo
-        ? `<div class="grow kv" style="background:var(--s1)">${ic('tag', 's')}<b>${esc(S.promo.code)}</b><span class="mut">−${S.promo.percent}%</span></div><button class="btn sm line" onclick="S.promo=null;refresh()">Убрать</button>`
-        : `<input id="promo" placeholder="Например, DEMO10" oninput="this.value=this.value.toUpperCase()"><button class="btn sm" style="min-height:48px" onclick="applyPromo()">Применить</button>`}</div></div>
+        ? `<div class="grow kv">${ic('tag', 's')}<b>${esc(S.promo.code)}</b><span class="mut">−${S.promo.percent}%</span></div><button class="btn sm ghost" onclick="S.promo=null;refresh()">Убрать</button>`
+        : `<input id="promo" placeholder="Например, DEMO10" oninput="this.value=this.value.toUpperCase()"><button class="btn sm" style="min-height:50px" onclick="applyPromo()">Применить</button>`}</div></div>
     ${kind === 'physical' ? `
       <div class="sec"><h2>Доставка</h2></div>
-      <div class="field" style="margin-top:0"><label>Имя и фамилия <i>*</i></label><input id="d-name" value="${esc(d.name || '')}" autocomplete="name"></div>
+      <div class="field" style="margin-top:6px"><label>Имя и фамилия <i>*</i></label><input id="d-name" value="${esc(d.name || '')}" autocomplete="name"></div>
       <div class="field"><label>Телефон <i>*</i></label><input id="d-phone" value="${esc(d.phone || '')}" type="tel" autocomplete="tel" placeholder="+7"></div>
       <div class="field"><label>Адрес или пункт выдачи <i>*</i></label><textarea id="d-address" rows="2" style="min-height:64px">${esc(d.address || '')}</textarea></div>
       <div class="field"><label>Комментарий для курьера</label><input id="d-comment" value="${esc(d.comment || '')}"></div>` : ''}
     <div class="sec"><h2>Способ оплаты</h2></div>
     ${kind === 'physical'
-      ? (canCrypto ? method('crypto', 'coins', 'Криптовалюта', cryptoSub) : `<div class="note">${ic('alert', 's')}<span>Оплата девайсов пока не подключена.</span></div>`)
+      ? (canCrypto ? method('crypto', 'coins', 'Криптовалюта', cryptoSub) : `<div class="demo-note">${ic('alert', 's')}<span>Оплата девайсов пока не подключена.</span></div>`)
       : method('stars', 'star', 'Звёзды Telegram', 'Покупаются прямо в Telegram, оплата в одно касание') + (canCrypto ? method('crypto', 'coins', 'Криптовалюта', cryptoSub) : '')}
-    <div class="bar"><button class="btn gold" id="paybtn" onclick="payNow('${kind}')" ${!c.method ? 'disabled' : ''}>Оплатить ${money(total, curr)}</button></div>`;
+    <div class="bar"><button class="btn acc" id="paybtn" onclick="payNow('${kind}')" ${!c.method ? 'disabled' : ''}>Оплатить ${money(total, curr)}</button></div>`;
 };
 function readDelivery() {
   ['name', 'phone', 'address', 'comment'].forEach((k) => { const el = $('#d-' + k); if (el) S.delivery[k] = el.value.trim(); });
@@ -687,7 +825,7 @@ async function payNow(kind) {
     const ids = new Set(lines.map((i) => i.idx));
     S.cart = S.cart.filter((_, i) => !ids.has(i)); S.promo = null; saveCart();
     S.stack = [{ v: 'orders' }, { v: 'order', id: r.order_id }];
-    render(true);
+    render(true, 'fwd');
     openPayment(r, r.order_id);
   } catch (e) {
     hapticN('error'); toast(e.message, 'err');
@@ -716,20 +854,38 @@ async function pollOrder(id, n = 0, call = 'order', max = 10) {
   if (c.data && ['pending', 'paying'].includes(c.data.order.status)) pollOrder(id, n + 1, call, max);
 }
 
-/* ═══════════════ Окно «Лут получен» ═══════════════ */
+/* ═══════════════ Нижние окна: выдача и обучение ═══════════════ */
+function openSheet(cls, inner, onClose) {
+  if ($('.sheet-bg')) return null;
+  const el = document.createElement('div');
+  el.className = 'sheet-bg ' + cls;
+  el.innerHTML = `<div class="sheet" role="dialog">${inner}</div>`;
+  el.addEventListener('click', (e) => { if (e.target === el) closeSheet(); });
+  el._onClose = onClose;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  try { tg.BackButton.show(); } catch (e) {}
+  return el;
+}
+function closeSheet() {
+  const el = $('.sheet-bg'); if (!el) return;
+  el.classList.remove('show'); haptic();
+  if (el._onClose) el._onClose();
+  setTimeout(() => { el.remove(); try { S.stack.length > 1 ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }, 300);
+}
+
 const fieldsOf = (b) => (b.fields ? b.fields : (b.lines || []).map((l) => ({ label: '', value: l })));
 function lootModal(o) {
-  if (!o.result || !o.result.length || $('.loot')) return;
+  if (!o.result || !o.result.length || $('.sheet-bg')) return;
   seen.add(o.id); hapticN();
+  track('loot_open', { order: o.id });
   const isTest = o.result.some((b) => b.test);
   let k = 0;
   const blocks = o.result.map((b) => `<div class="blk-t">${esc(b.title)}</div>` + fieldsOf(b).map((f) => `<div class="kv" style="animation-delay:${(0.35 + 0.08 * k++).toFixed(2)}s">
       <div class="grow">${f.label ? `<div class="k">${esc(f.label)}</div>` : ''}<div class="v">${esc(f.value)}</div></div>
       <button class="copy" onclick='copy(${esc(JSON.stringify(f.value))})' aria-label="Скопировать">${ic('copy', 's')}</button></div>`).join('')).join('');
   const all = o.result.map((b) => b.title + '\n' + fieldsOf(b).map((f) => (f.label ? `${f.label}: ` : '') + f.value).join('\n')).join('\n\n');
-  const el = document.createElement('div');
-  el.className = 'loot';
-  el.innerHTML = `<div class="sheet" role="dialog" aria-label="Заказ выдан">
+  const el = openSheet('loot', `<div class="loot-in loot">
       <div class="glow"></div>
       <div class="crate">${ic('box')}</div>
       <h2>Лут получен</h2>
@@ -738,34 +894,70 @@ function lootModal(o) {
       <div class="demo">${isTest
         ? `${ic('flask', 's')}<span>Это демо-магазин, поэтому вместо логинов и ключей стоит «Тест». В настоящем магазине здесь будут реальные данные, и они же сразу придут в чат с ботом.</span>`
         : `${ic('chat', 's')}<span>Данные продублированы в чат с ботом. Проверьте товар и подтвердите получение в заказе.</span>`}</div>
-      <div class="btns" style="margin-top:16px">
-        <button class="btn line" id="copy-all">${ic('copy', 's')} Копировать</button>
-        <button class="btn gold" onclick="closeLoot()">Забрать</button>
-      </div></div>`;
-  el.addEventListener('click', (e) => { if (e.target === el) closeLoot(); });
-  document.body.appendChild(el);
-  $('#copy-all').onclick = () => copy(all);
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
-  try { tg.BackButton.show(); } catch (e) {}
+      <div class="btns" style="margin-top:18px">
+        <button class="btn ghost" id="copy-all">${ic('copy', 's')} Копировать</button>
+        <button class="btn acc" onclick="closeSheet()">Забрать</button>
+      </div></div>`);
+  if (el) $('#copy-all').onclick = () => { track('copy', { order: o.id }); copy(all); };
 }
-function closeLoot() {
-  const el = $('.loot'); if (!el) return;
-  el.classList.remove('show'); haptic();
-  setTimeout(() => { el.remove(); try { S.stack.length > 1 ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }, 250);
+
+/* Обучение для новых покупателей */
+const ONB = () => {
+  const g = S.data.games.slice(0, 3);
+  const pay = S.data.payments;
+  const demoP = S.data.products.find(isHit) || S.data.products[0];
+  return [
+    { art: `<div class="fan">${g.map((x) => gameTile(x)).join('')}</div>`, h: `Добро пожаловать в ${esc(S.data.shop.name)}`,
+      p: 'Аккаунты, игровая валюта, ключи и буст для любимых игр — в одном месте.',
+      d: S.data.demoAuto ? 'Это демо-магазин: цены символические, а после оплаты приходят тестовые данные.' : '' },
+    { art: `<div class="seg"><button>Популярные</button><button class="on">Сначала дешёвые</button></div><div class="mini" style="margin-top:34px">${demoP ? itemRow(demoP) : ''}</div>`, h: 'Найдите нужное',
+      p: 'Выберите игру или категорию. Хиты всегда наверху, а сортировка покажет сначала самое дешёвое.' },
+    { art: `<div class="mini" style="padding:10px">${`<div class="pay on"><span class="pi">${ic('star')}</span><span class="grow"><b>Звёзды Telegram</b><span>в одно касание</span></span><span class="radio"></span></div>`}${pay.crypto ? `<div class="pay"><span class="pi">${ic('coins')}</span><span class="grow"><b>Криптовалюта</b><span>USDT, TON, BTC</span></span><span class="radio"></span></div>` : ''}</div>`,
+      h: 'Оплатите как удобно', p: `Звёздами Telegram в одно касание${pay.crypto ? ' или криптой: USDT, TON, BTC' : ''}.` },
+    { art: `<div class="stamp">ТЕСТ</div><div class="kv"><div class="grow"><div class="k">Ключ активации</div><div class="v">XXXX-XXXX-XXXX</div></div><span class="copy">${ic('copy', 's')}</span></div>`,
+      h: 'Получите сразу', p: 'Данные появятся в маркете сразу после оплаты, а их копия придёт в чат с ботом.' },
+    { art: `<div class="btns"><span class="btn ok sm" style="width:100%">${ic('check', 's')} Всё получил</span><span class="btn bad sm" style="width:100%">Есть проблема</span></div>`,
+      h: 'Сделка под защитой', p: 'Проверьте товар и нажмите «Всё получил». Если что-то не так, откройте спор — продавец ответит в чате.' },
+  ];
+};
+let onbStep = 0, onbDone = false;
+function openOnboarding() {
+  const slides = ONB();
+  onbStep = 0; onbDone = false;
+  const el = openSheet('onb', `<div class="onb-track" id="onb-track">${slides.map((s) => `<div class="onb-slide">
+      <div class="onb-art">${s.art}</div><h2>${s.h}</h2><p>${s.p}</p>${s.d ? `<p class="dim">${s.d}</p>` : ''}</div>`).join('')}</div>
+    <div class="onb-foot"><div class="dots" id="onb-dots">${slides.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>
+      <div class="row"><button class="btn sm ghost" id="onb-skip" onclick="closeSheet()">Пропустить</button><button class="btn sm acc" id="onb-next" onclick="onbGo(1)">Далее</button></div></div>`,
+    () => { store.set('onb', '1'); track('onboarding', onbDone ? { done: true } : { skipped: onbStep + 1 }); });
+  if (!el) return;
+  let sx = null;
+  const tr = el.querySelector('.onb-track');
+  tr.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+  tr.addEventListener('touchend', (e) => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 45) onbGo(dx < 0 ? 1 : -1); sx = null; });
+}
+function onbGo(d) {
+  const n = ONB().length;
+  if (d > 0 && onbStep === n - 1) { onbDone = true; closeSheet(); hapticN(); return; }
+  onbStep = Math.max(0, Math.min(n - 1, onbStep + d));
+  hapticSel();
+  $('#onb-track').style.transform = `translateX(${-onbStep * 100}%)`;
+  document.querySelectorAll('#onb-dots i').forEach((x, i) => x.classList.toggle('on', i === onbStep));
+  $('#onb-next').textContent = onbStep === n - 1 ? 'Начать покупки' : 'Далее';
+  $('#onb-skip').style.visibility = onbStep === n - 1 ? 'hidden' : 'visible';
 }
 
 /* ═══════════════ Заказы ═══════════════ */
 V.orders = async () => {
   const { orders } = await api('orders');
-  if (!orders.length) return `<div class="title">Заказы</div>` + empty('box', 'Заказов пока нет', 'Здесь будут ваши покупки и всё, что по ним выдано.', `<button class="btn sm gold" style="margin:auto" onclick="tab('home')">Выбрать товар</button>`);
-  return `<div class="title">Заказы</div>${orders.map((o) => orderRow(o)).join('')}`;
+  if (!orders.length) return `<div class="title">Заказы</div>` + empty('box', 'Заказов пока нет', 'Здесь будут ваши покупки и всё, что по ним выдано.', `<button class="btn sm acc" style="margin:auto" onclick="tab('home')">Выбрать товар</button>`);
+  return `<div class="title">Заказы</div><div>${orders.map((o) => orderRow(o)).join('')}</div>`;
 };
 function orderRow(o, admin) {
   const titles = o.items.map((i) => `${i.title}${i.qty > 1 ? ' ×' + i.qty : ''}`).join(', ');
-  return `<button class="order" onclick="go('${admin ? 'aorder' : 'order'}',{id:${o.id}})">
+  return `<button class="ocard" onclick="go('${admin ? 'aorder' : 'order'}',{id:${o.id}})">
     <div class="row between"><b>Заказ #${o.id}</b><span class="st s-${o.status}">${STATUS[o.status] || o.status}</span></div>
     <div class="oi">${esc(titles)}</div>
-    <div class="row between xs mut"><span>${admin ? esc(o.user_name) + ', ' : ''}${dateStr(o.created_at)}</span><b class="disp" style="color:var(--tx);font-size:15px">${money(o.total, o.currency)}</b></div></button>`;
+    <div class="row between xs mut"><span>${admin ? esc(o.user_name) + ', ' : ''}${dateStr(o.created_at)}</span><b class="num" style="color:var(--tx);font-size:15px">${money(o.total, o.currency)}</b></div></button>`;
 }
 
 async function refreshOrderData(c, call, body) {
@@ -773,7 +965,6 @@ async function refreshOrderData(c, call, body) {
   catch (e) { toast(e.message, 'err'); }
   if (cur() !== c) return;
   refresh();
-  // окно выдачи показываем один раз — как только заказ выдан
   const o = c.data && c.data.order;
   if (o && c.v === 'order' && ['delivered', 'completed'].includes(o.status) && o.result && o.result.length && !seen.has(o.id)) lootModal(o);
 }
@@ -783,13 +974,13 @@ const STATUS_HINT = {
   paying: 'Проверяем оплату, это пара секунд.',
   processing_digital: 'Продавец выполняет заказ, обычно за 5–30 минут. Пришлём уведомление в Telegram.',
   processing_physical: 'Собираем заказ. Трек-номер появится здесь после отправки.',
-  delivered: 'Товар выдан. Проверьте его и подтвердите получение. Если не подтвердить, заказ закроется сам через 72 часа.',
+  delivered: 'Товар выдан. Проверьте его и нажмите «Всё получил». Если не подтвердить, заказ закроется сам через 72 часа.',
   completed: 'Сделка завершена. Спасибо за покупку!',
   dispute: 'Открыт спор. Продавец ответит в чате ниже.',
   refunded: 'Деньги возвращены.',
   cancelled: 'Заказ отменён.',
 };
-function track(o) {
+function trackBar(o) {
   const labels = o.kind === 'physical' ? ['Оплата', 'Сборка', 'В пути', 'Получен'] : ['Оплата', 'Выдача', 'Проверка', 'Готово'];
   const lvl = { pending: 0, paying: 1, processing: 1, dispute: 3, delivered: 3, completed: 4 }[o.status];
   if (lvl === undefined) return '';
@@ -800,20 +991,20 @@ function resultBlock(o, admin) {
   if (!o.result || !o.result.length) return '';
   const isTest = o.result.some((b) => b.test);
   return `<div class="sec"><h2>${o.kind === 'physical' ? 'Отправка' : admin ? 'Выдано покупателю' : 'Ваш товар'}</h2>${isTest ? '<span>тестовые данные</span>' : ''}</div>
-    <div class="loot-card">${o.result.map((b) => `<div class="xs mut" style="margin:8px 0 6px;font-weight:700">${esc(b.title)}</div>` + fieldsOf(b).map((f) => `<div class="kv"><div class="grow">${f.label ? `<div class="k">${esc(f.label)}</div>` : ''}<div class="v">${esc(f.value)}</div></div><button class="copy" onclick='copy(${esc(JSON.stringify(f.value))})' aria-label="Скопировать">${ic('copy', 's')}</button></div>`).join('')).join('')}
-    ${admin ? '' : `<button class="btn sm line" style="margin:12px auto 0" onclick="lootModal(cur().data.order)">${ic('spark', 's')} Открыть окно выдачи</button>`}</div>`;
+    <div class="loot-card">${o.result.map((b) => `<div class="xs mut" style="margin:8px 0 6px;font-weight:650">${esc(b.title)}</div>` + fieldsOf(b).map((f) => `<div class="kv"><div class="grow">${f.label ? `<div class="k">${esc(f.label)}</div>` : ''}<div class="v">${esc(f.value)}</div></div><button class="copy" onclick='copy(${esc(JSON.stringify(f.value))})' aria-label="Скопировать">${ic('copy', 's')}</button></div>`).join('')).join('')}
+    ${admin ? '' : `<button class="btn sm ghost" style="margin:12px auto 0" onclick="lootModal(cur().data.order)">${ic('spark', 's')} Открыть окно выдачи</button>`}</div>`;
 }
 function itemsBlock(o) {
-  return `<div class="group">${o.items.map((i) => `<div class="sum"><span class="grow">${esc(i.title)}${i.qty > 1 ? ` <span class="mut">×${i.qty}</span>` : ''}${i.note ? `<div class="xs mut">${esc(i.ask || 'Данные')}: ${esc(i.note)}</div>` : ''}</span><span>${money(r2(i.price * i.qty), o.currency)}</span></div>`).join('')}
-    ${o.discount ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(o.promo)}</span><span>−${money(o.discount, o.currency)}</span></div>` : ''}
-    <div class="sum total"><span>Итого</span><span>${money(o.total, o.currency)}</span></div>
+  return `<div class="box">${o.items.map((i) => `<div class="sum"><span class="grow">${esc(i.title)}${i.qty > 1 ? ` <span class="mut">×${i.qty}</span>` : ''}${i.note ? `<div class="xs mut">${esc(i.ask || 'Данные')}: ${esc(i.note)}</div>` : ''}</span><span class="num">${money(r2(i.price * i.qty), o.currency)}</span></div>`).join('')}
+    ${o.discount ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(o.promo)}</span><span class="num">−${money(o.discount, o.currency)}</span></div>` : ''}
+    <div class="sum total"><span>Итого</span><span class="num">${money(o.total, o.currency)}</span></div>
     <div class="xs mut" style="margin-top:8px">${{ stars: 'Звёзды Telegram', crypto: 'Криптовалюта через CryptoBot' }[o.method] || ''}, ${dateStr(o.created_at)}</div></div>`;
 }
 function chatBlock(c, role) {
   const o = c.data.order;
   if (['pending', 'paying', 'cancelled'].includes(o.status)) return '';
   const msgs = c.data.messages;
-  return `<div class="sec"><h2>${role === 'buyer' ? 'Чат с продавцом' : 'Чат с покупателем'}</h2></div><div class="group">
+  return `<div class="sec"><h2>${role === 'buyer' ? 'Чат с продавцом' : 'Чат с покупателем'}</h2></div><div class="box">
     <div class="chat">${msgs.length ? msgs.map((m) => `<div class="msg ${m.sender === role ? 'me' : 'them'}">${esc(m.text)}<div class="mt">${dateStr(m.created_at)}</div></div>`).join('')
       : `<div class="msg sys">${role === 'buyer' ? 'Есть вопрос по заказу? Напишите, продавец получит сообщение в Telegram.' : 'Сообщений пока нет'}</div>`}</div>
     <div class="chatin"><input id="chat-in" placeholder="Сообщение" onkeydown="if(event.key==='Enter')sendMsg()" enterkeyhint="send"><button onclick="sendMsg()" aria-label="Отправить">${ic('send')}</button></div></div>`;
@@ -832,35 +1023,35 @@ V.order = (c) => {
     : o.status === 'refunded' && o.method === 'stars' ? 'Звёзды вернулись на ваш баланс.' : STATUS_HINT[o.status];
   let actions = '';
   if (c.disputeOpen && ['processing', 'delivered'].includes(o.status)) {
-    actions = `<div class="group"><b>Что пошло не так?</b>
+    actions = `<div class="box"><b>Что пошло не так?</b>
       <div class="xs mut" style="margin:4px 0 10px">Продавец увидит описание в чате заказа. Если вопрос не решится, деньги вернут.</div>
-      <textarea id="dispute-text" placeholder="Например: ключ не активируется, пишет «уже использован»"></textarea>
-      <div class="btns" style="margin-top:10px"><button class="btn line" onclick="cur().disputeOpen=false;refresh()">Назад</button><button class="btn bad" onclick="sendDispute()">Открыть спор</button></div></div>`;
+      <textarea id="dispute-text" placeholder="Например: ключ не активируется, пишет «уже использован»" style="background:var(--s2)"></textarea>
+      <div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="cur().disputeOpen=false;refresh()">Назад</button><button class="btn bad" onclick="sendDispute()">Открыть спор</button></div></div>`;
   } else if (o.status === 'pending') {
-    actions = `<button class="btn gold" onclick="payAgain(${o.id})">Оплатить ${money(o.total, o.currency)}</button>
-      ${o.method === 'crypto' ? `<button class="btn line" style="margin-top:8px" onclick="checkCrypto()">${ic('refresh', 's')} Я оплатил, проверить</button>` : ''}
-      <button class="btn line" style="margin-top:8px;color:var(--mut)" onclick="orderAct('order_cancel','Отменить заказ?')">Отменить заказ</button>`;
+    actions = `<button class="btn acc" onclick="payAgain(${o.id})">Оплатить ${money(o.total, o.currency)}</button>
+      ${o.method === 'crypto' ? `<button class="btn ghost" style="margin-top:8px" onclick="checkCrypto()">${ic('refresh', 's')} Я оплатил, проверить</button>` : ''}
+      <button class="btn ghost" style="margin-top:8px;color:var(--mut)" onclick="orderAct('order_cancel','Отменить заказ?')">Отменить заказ</button>`;
   } else if (o.status === 'delivered') {
     actions = `<button class="btn ok" onclick="orderAct('order_confirm','Подтвердить получение? После этого сделка закроется.')">${ic('check')} Всё получил</button>
       <button class="btn bad" style="margin-top:8px" onclick="openDispute()">Есть проблема</button>`;
   } else if (o.status === 'processing') {
-    actions = `<button class="btn line" onclick="openDispute()">Открыть спор</button>`;
+    actions = `<button class="btn ghost" onclick="openDispute()">Открыть спор</button>`;
   } else if (o.status === 'completed' && !o.reviewed) {
     c.rating = c.rating || 5;
-    actions = `<div class="group"><b class="disp">Оцените покупку</b>
-      <div class="rate" style="margin:12px 0">${[1, 2, 3, 4, 5].map((n) => `<button class="${n <= c.rating ? 'on' : ''}" onclick="cur().rating=${n};haptic();refresh()" aria-label="Оценка ${n}"><svg class="i" viewBox="0 0 24 24">${ICONS.star}</svg></button>`).join('')}</div>
-      <textarea id="rev-text" placeholder="Пара слов о товаре и продавце, если хотите" style="min-height:70px"></textarea>
-      <button class="btn gold" style="margin-top:10px" onclick="sendReview()">Отправить отзыв</button></div>`;
+    actions = `<div class="box"><b>Оцените покупку</b>
+      <div class="rate" style="margin:12px 0">${[1, 2, 3, 4, 5].map((n) => `<button class="${n <= c.rating ? 'on' : ''}" onclick="cur().rating=${n};hapticSel();refresh()" aria-label="Оценка ${n}"><svg class="i" viewBox="0 0 24 24">${ICONS.star}</svg></button>`).join('')}</div>
+      <textarea id="rev-text" placeholder="Пара слов о товаре и продавце, если хотите" style="min-height:70px;background:var(--s2)"></textarea>
+      <button class="btn acc" style="margin-top:10px" onclick="sendReview()">Отправить отзыв</button></div>`;
   } else if (o.reviewed) {
-    actions = `<div class="group row">${stars(o.reviewed)}<span class="sm mut">Спасибо за отзыв!</span></div>`;
+    actions = `<div class="row">${stars(o.reviewed)}<span class="sm mut">Спасибо за отзыв!</span></div>`;
   }
   return `<div class="row between" style="margin-top:4px"><div class="title" style="margin:0">Заказ #${o.id}</div><span class="st s-${o.status}">${STATUS[o.status]}</span></div>
-    ${track(o)}
+    ${trackBar(o)}
     <div class="note">${ic(o.status === 'delivered' || o.status === 'completed' ? 'check' : o.status === 'dispute' ? 'alert' : 'clock', 's')}<span>${esc(hint || '')}</span></div>
     ${resultBlock(o)}
-    ${actions ? `<div style="margin-top:14px">${actions}</div>` : ''}
+    ${actions ? `<div style="margin-top:16px">${actions}</div>` : ''}
     <div class="sec"><h2>Состав заказа</h2></div>${itemsBlock(o)}
-    ${o.delivery ? `<div class="sec"><h2>Доставка</h2></div><div class="group sm">${esc(o.delivery.name)}, ${esc(o.delivery.phone)}<div class="mut">${esc(o.delivery.address)}</div>${o.delivery.comment ? `<div class="mut">${esc(o.delivery.comment)}</div>` : ''}</div>` : ''}
+    ${o.delivery ? `<div class="sec"><h2>Доставка</h2></div><div class="box sm">${esc(o.delivery.name)}, ${esc(o.delivery.phone)}<div class="mut">${esc(o.delivery.address)}</div>${o.delivery.comment ? `<div class="mut">${esc(o.delivery.comment)}</div>` : ''}</div>` : ''}
     ${chatBlock(c, 'buyer')}`;
 };
 async function payAgain(id) { try { openPayment(await api('order_pay', { id }), id); } catch (e) { toast(e.message, 'err'); } }
@@ -886,10 +1077,10 @@ async function sendReview() {
 }
 async function reloadCatalog() { try { const d = await api('bootstrap'); S.data = { ...S.data, ...d }; } catch (e) {} }
 
-/* ═══════════════ Управление магазином ═══════════════ */
+/* ═══════════════ Управление ═══════════════ */
 V.admin = () => {
-  const tabs = [['stats', 'chart', 'Сводка'], ['orders', 'box', 'Заказы', S.counts.attention], ['products', 'game', 'Товары'], ['promos', 'tag', 'Скидки'], ['mail', 'mega', 'Рассылка']];
-  const head = `<div class="title">Управление</div><div class="adm-tabs">${tabs.map(([k, i, t, b]) => `<button class="${S.adminTab === k ? 'on' : ''}" onclick="S.adminTab='${k}';haptic();render(true)">${ic(i)}<span>${t}</span>${b ? `<span class="dot">${b}</span>` : ''}</button>`).join('')}</div>`;
+  const tabs = [['stats', 'Сводка'], ['orders', 'Заказы', S.counts.attention], ['products', 'Товары'], ['people', 'Люди'], ['promo', 'Промо']];
+  const head = `<div class="title">Управление</div><div class="pills" style="margin-bottom:8px">${tabs.map(([k, t, b]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" onclick="S.adminTab='${k}';hapticSel();render(true,'tab')">${t}${b ? `<em>${b}</em>` : ''}</button>`).join('')}</div>`;
   return Promise.resolve(A[S.adminTab]()).then((h) => head + h);
 };
 const A = {};
@@ -901,25 +1092,28 @@ A.stats = async () => {
   const td = (m) => (s.todayBy.find((x) => x.method === m) || {}).sum || 0;
   const max = Math.max(1, ...s.chart);
   const days = s.chart.map((_, i) => new Date((s.day - (6 - i) * 86400) * 1000).toLocaleDateString('ru-RU', { weekday: 'short' }));
-  const goOrders = "S.ordersFilter='active';S.adminTab='orders';render(true)";
+  const goOrders = "S.ordersFilter='active';S.adminTab='orders';render(true,'tab')";
+  const goPeople = (f) => `S.people='users';S.peopleFilter='${f}';S.adminTab='people';render(true,'tab')`;
   const nOrd = (n) => `${n} ${plural(n, 'заказ', 'заказа', 'заказов')}`;
-  return `<div class="kpis">
-      <div class="kpi"><div class="kl">${ic('box', 's')}Заказов сегодня</div><div class="kv2">${s.today}</div></div>
-      <div class="kpi"><div class="kl">${ic('coins', 's')}Выручка сегодня</div><div class="kv2" style="font-size:18px">${td('stars')} ⭐<span class="mut"> + </span>${usd(td('crypto'))}</div></div>
-      <button class="kpi" onclick="${goOrders}"><div class="kl">${ic('clock', 's')}Ждут выполнения</div><div class="kv2">${s.processing}</div></button>
-      <button class="kpi ${s.dispute ? 'hot' : ''}" onclick="${goOrders}"><div class="kl">${ic('alert', 's')}Открытые споры</div><div class="kv2">${s.dispute}</div></button>
+  return `<div class="kpis" style="margin-top:12px">
+      <div class="kpi"><div class="kl">Заказов сегодня</div><div class="kv2">${s.today}</div></div>
+      <div class="kpi"><div class="kl">Выручка сегодня</div><div class="kv2" style="font-size:19px">${td('stars')} ${STAR} <span class="mut">+</span> ${usd(td('crypto'))}</div></div>
+      <button class="kpi" onclick="${goOrders}"><div class="kl">Ждут выполнения</div><div class="kv2">${s.processing}</div></button>
+      <button class="kpi ${s.dispute ? 'hot' : ''}" onclick="${goOrders}"><div class="kl">Открытые споры</div><div class="kv2">${s.dispute}</div></button>
+      <button class="kpi" onclick="${goPeople('today')}"><div class="kl">Посетители сегодня</div><div class="kv2">${s.visitors}</div></button>
+      <button class="kpi" onclick="${goPeople('all')}"><div class="kl">Новые сегодня</div><div class="kv2">${s.fresh}</div></button>
     </div>
     <div class="sec"><h2>Заказы за неделю</h2><span>${nOrd(s.chart.reduce((a, b) => a + b, 0))}</span></div>
-    <div class="panel"><div class="bars">${s.chart.map((n, i) => `<div><b>${n || ''}</b><i class="${i === 6 ? 'on' : ''}" style="height:${Math.max(4, n / max * 72)}px"></i><span>${days[i]}</span></div>`).join('')}</div></div>
+    <div class="box"><div class="bars">${s.chart.map((n, i) => `<div><b>${n || ''}</b><i class="${i === 6 ? 'on' : ''}" style="height:${Math.max(4, n / max * 76)}px;animation-delay:${i * 40}ms"></i><span>${days[i]}</span></div>`).join('')}</div></div>
     <div class="sec"><h2>Выручка за всё время</h2></div>
-    <div class="panel">
-      <div class="sum"><span class="inl">${ic('star', 's')} Звёзды, ${nOrd(by('stars').n || 0)}</span><b class="disp">${by('stars').sum || 0} ⭐</b></div>
-      <div class="sum"><span class="inl">${ic('coins', 's')} Крипта, ${nOrd(by('crypto').n || 0)}</span><b class="disp">${usd(by('crypto').sum)}</b></div>
-      <div class="sum total"><span class="inl" style="font-size:14px;font-weight:700">${ic('users', 's')} Пользователи / покупатели</span><span>${s.users} / ${s.buyers}</span></div>
+    <div class="box">
+      <div class="sum"><span>Звёзды, ${nOrd(by('stars').n || 0)}</span><b class="num">${by('stars').sum || 0} ${STAR}</b></div>
+      <div class="sum"><span>Крипта, ${nOrd(by('crypto').n || 0)}</span><b class="num">${usd(by('crypto').sum)}</b></div>
+      <div class="sum total"><span style="font-size:14.5px;font-weight:600">Пользователи / покупатели</span><span class="num">${s.users} / ${s.buyers}</span></div>
     </div>
-    ${s.low.length ? `<div class="sec"><h2>Заканчиваются ключи</h2></div><div class="panel">${s.low.map((p) => `<button class="li" onclick="go('aproduct',{id:${p.id}})"><div class="tile r-legend">${ic('key')}</div><span class="grow sm">${esc(p.title)}</span><b style="color:${p.free ? 'var(--warn)' : 'var(--bad)'}">${p.free}</b></button>`).join('')}</div>` : ''}
-    ${s.top.length ? `<div class="sec"><h2>Лидеры продаж</h2></div><div class="panel">${s.top.map((p) => { const pr = P(p.id) || p; return `<button class="li" onclick="go('aproduct',{id:${p.id}})"><div class="tile r-${rarity(pr)}">${ic(secIcon(pr.section))}</div><span class="grow sm">${esc(p.title)}</span><b>${p.sold} шт.</b></button>`; }).join('')}</div>` : ''}
-    ${s.reviews.length ? `<div class="sec"><h2>Свежие отзывы</h2></div>${s.reviews.map((r) => `<div class="rev"><div class="row between"><b class="sm">${esc(r.user_name)}</b>${stars(r.rating)}</div><div class="xs mut">${esc(r.title || '')}</div>${r.text ? `<div class="sm" style="margin-top:6px">${esc(r.text)}</div>` : ''}</div>`).join('')}` : ''}`;
+    ${s.low.length ? `<div class="sec"><h2>Заканчиваются ключи</h2></div><div>${s.low.map((p) => `<button class="li" onclick="go('aproduct',{id:${p.id}})"><span class="gl r-legend">${ic('key')}</span><span class="grow sm">${esc(p.title)}</span><b style="color:${p.free ? 'var(--warn)' : 'var(--bad)'}">${p.free}</b></button>`).join('')}</div>` : ''}
+    ${s.top.length ? `<div class="sec"><h2>Лидеры продаж</h2></div><div>${s.top.map((p) => { const pr = P(p.id) || p; return `<button class="li" onclick="go('aproduct',{id:${p.id}})"><span class="gl r-${rarity(pr)}">${ic(secIcon(pr.section))}</span><span class="grow sm">${esc(p.title)}</span><b class="num">${p.sold} шт.</b></button>`; }).join('')}</div>` : ''}
+    ${s.reviews.length ? `<div class="sec"><h2>Свежие отзывы</h2></div>${s.reviews.map((r) => `<div class="li" style="display:block"><div class="row between"><b class="sm">${esc(r.user_name)}</b>${stars(r.rating)}</div><div class="xs mut">${esc(r.title || '')}</div>${r.text ? `<div class="sm" style="margin-top:4px">${esc(r.text)}</div>` : ''}</div>`).join('')}` : ''}`;
 };
 
 A.orders = async () => {
@@ -929,30 +1123,29 @@ A.orders = async () => {
   const q = S.orderQ.trim().toLowerCase().replace('#', '');
   const list = q ? orders.filter((o) => String(o.id) === q || (o.user_name || '').toLowerCase().includes(q) || (o.username || '').toLowerCase().includes(q)) : orders;
   const fl = [['active', 'Требуют внимания'], ['done', 'Выданы'], ['pending', 'Не оплачены'], ['refunded', 'Возвраты'], ['all', 'Все']];
-  return `<div class="search" style="margin-bottom:10px">${ic('search')}<input placeholder="Номер заказа или имя покупателя" value="${esc(S.orderQ)}" oninput="S.orderQ=this.value;clearTimeout(window._oq);window._oq=setTimeout(()=>render(false),300)"></div>
-    <div class="chips">${fl.map(([k, t]) => `<button class="chip ${f === k ? 'on' : ''}" onclick="S.ordersFilter='${k}';render(false)">${t}</button>`).join('')}</div>
-    ${list.length ? list.map((o) => orderRow(o, true)).join('') : empty(f === 'active' ? 'check' : 'box', f === 'active' ? 'Всё под контролем' : 'Здесь пусто', f === 'active' ? 'Нет заказов, которые ждут вашего действия.' : 'Заказы с таким статусом появятся здесь.')}`;
+  return `<div class="search" style="margin:12px 0 10px">${ic('search')}<input placeholder="Номер заказа или имя покупателя" value="${esc(S.orderQ)}" oninput="S.orderQ=this.value;clearTimeout(window._oq);window._oq=setTimeout(()=>render(false),300)"></div>
+    <div class="pills">${fl.map(([k, t]) => `<button class="pill ${f === k ? 'on' : ''}" onclick="S.ordersFilter='${k}';hapticSel();render(false,'tab')">${t}</button>`).join('')}</div>
+    <div style="margin-top:6px">${list.length ? list.map((o) => orderRow(o, true)).join('') : empty(f === 'active' ? 'check' : 'box', f === 'active' ? 'Всё под контролем' : 'Здесь пусто', f === 'active' ? 'Нет заказов, которые ждут вашего действия.' : 'Заказы с таким статусом появятся здесь.')}</div>`;
 };
 
 V.aorder = (c) => {
   if (!c.data) { refreshOrderData(c); return loader(); }
   const o = c.data.order;
-  const who = o.username ? `<button class="inl" style="color:var(--rare);font-weight:700" onclick="tg.openTelegramLink('https://t.me/${esc(o.username)}')">@${esc(o.username)}</button>` : `<span class="mut">ID ${o.user_id}</span>`;
   let act = '';
   if (['processing', 'dispute'].includes(o.status)) {
-    act += `<div class="group"><b>${o.kind === 'physical' ? 'Отправить заказ' : 'Выдать товар'}</b>
+    act += `<div class="box"><b>${o.kind === 'physical' ? 'Отправить заказ' : 'Выдать товар'}</b>
       <div class="xs mut" style="margin:4px 0 10px">${o.kind === 'physical' ? 'Трек-номер и служба доставки. Покупатель сразу получит уведомление.' : 'Логин, пароль, код или отчёт. Каждая строка получит кнопку «Скопировать».'}</div>
-      <textarea id="deliver-text" placeholder="${o.kind === 'physical' ? 'СДЭК 1234567890' : 'Логин: …\nПароль: …'}"></textarea>
-      <button class="btn gold" style="margin-top:10px" onclick="adminAct('deliver')">${ic(o.kind === 'physical' ? 'truck' : 'check')} ${o.kind === 'physical' ? 'Отметить отправку' : 'Выдать'}</button></div>`;
+      <textarea id="deliver-text" style="background:var(--s2)" placeholder="${o.kind === 'physical' ? 'СДЭК 1234567890' : 'Логин: …\nПароль: …'}"></textarea>
+      <button class="btn acc" style="margin-top:10px" onclick="adminAct('deliver')">${ic(o.kind === 'physical' ? 'truck' : 'check')} ${o.kind === 'physical' ? 'Отметить отправку' : 'Выдать'}</button></div>`;
   }
   const btns = [];
   if (['processing', 'delivered', 'dispute'].includes(o.status)) btns.push(`<button class="btn ok sm" onclick="adminAct('complete','Завершить заказ без подтверждения покупателя?')">${ic('check', 's')} Завершить</button>`);
   if (['processing', 'delivered', 'completed', 'dispute'].includes(o.status)) btns.push(`<button class="btn bad sm" onclick="adminAct('refund','${o.method === 'stars' ? 'Вернуть звёзды покупателю? Отменить это нельзя.' : 'Отметить возврат? Крипту нужно вернуть вручную через CryptoBot.'}')">${ic('undo', 's')} Вернуть деньги</button>`);
-  if (o.status === 'pending') btns.push(`<button class="btn line sm" onclick="adminAct('cancel','Отменить неоплаченный заказ?')">Отменить</button>`);
+  if (o.status === 'pending') btns.push(`<button class="btn ghost sm" onclick="adminAct('cancel','Отменить неоплаченный заказ?')">Отменить</button>`);
   return `<div class="row between" style="margin-top:4px"><div class="title" style="margin:0">Заказ #${o.id}</div><span class="st s-${o.status}">${STATUS[o.status]}</span></div>
-    <div class="group row" style="margin-top:14px"><div class="tile">${ic('user')}</div><div class="grow"><b>${esc(o.user_name)}</b><div class="sm">${who}</div></div><span class="xs mut">${dateStr(o.created_at)}</span></div>
-    ${act}${btns.length ? `<div class="btns">${btns.join('')}</div>` : ''}
-    ${o.delivery ? `<div class="sec"><h2>Доставка</h2></div><div class="group sm">${esc(o.delivery.name)}, <a href="tel:${esc(o.delivery.phone)}" style="color:var(--rare)">${esc(o.delivery.phone)}</a><div class="mut">${esc(o.delivery.address)}</div>${o.delivery.comment ? `<div class="mut">${esc(o.delivery.comment)}</div>` : ''}</div>` : ''}
+    <button class="li" style="margin-top:12px" onclick="go('auser',{id:${o.user_id}})">${avatar(o.user_id, o.user_name)}<div class="grow"><b>${esc(o.user_name)}</b><div class="xs mut">${o.username ? '@' + esc(o.username) + ', ' : ''}${dateStr(o.created_at)}</div></div>${ic('arrow', 's')}</button>
+    ${act ? `<div style="margin-top:8px">${act}</div>` : ''}${btns.length ? `<div class="btns" style="margin-top:8px">${btns.join('')}</div>` : ''}
+    ${o.delivery ? `<div class="sec"><h2>Доставка</h2></div><div class="box sm">${esc(o.delivery.name)}, <a href="tel:${esc(o.delivery.phone)}" style="color:var(--rare)">${esc(o.delivery.phone)}</a><div class="mut">${esc(o.delivery.address)}</div>${o.delivery.comment ? `<div class="mut">${esc(o.delivery.comment)}</div>` : ''}</div>` : ''}
     <div class="sec"><h2>Состав заказа</h2></div>${itemsBlock(o)}
     ${resultBlock(o, true)}
     ${chatBlock(c, 'seller')}`;
@@ -966,18 +1159,19 @@ async function adminAct(action, q) {
   catch (e) { hapticN('error'); toast(e.message, 'err'); }
 }
 
+/* Товары */
 A.products = async () => {
   const { products, games } = await api('admin_products');
   S.adminGames = games; S.adminProducts = products;
-  const chip = (k, t, n) => `<button class="chip ${S.prodFilter === k ? 'on' : ''}" data-k="${k}" onclick="setProdFilter('${k}')">${t}<em>${n}</em></button>`;
-  return `<button class="btn gold" onclick="go('aproduct',{id:0})">${ic('plus')} Новый товар</button>
+  const chip = (k, t, n) => `<button class="pill ${S.prodFilter === k ? 'on' : ''}" data-k="${k}" onclick="setProdFilter('${k}')">${t}<em>${n}</em></button>`;
+  return `<button class="btn acc" style="margin-top:12px" onclick="go('aproduct',{id:0})">${ic('plus')} Новый товар</button>
     <div class="search" style="margin:12px 0 10px">${ic('search')}<input placeholder="Поиск по названию" value="${esc(S.prodQ)}" oninput="S.prodQ=this.value;$('#plist').innerHTML=prodList()"></div>
-    <div class="chips" id="pchips">${chip('all', 'Все', products.length)}${chip('on', 'В продаже', products.filter((p) => p.active).length)}${chip('off', 'Скрытые', products.filter((p) => !p.active).length)}</div>
+    <div class="pills" id="pchips">${chip('all', 'Все', products.length)}${chip('on', 'В продаже', products.filter((p) => p.active).length)}${chip('off', 'Скрытые', products.filter((p) => !p.active).length)}</div>
     <div id="plist">${prodList()}</div>`;
 };
 function setProdFilter(k) {
-  S.prodFilter = k; haptic();
-  document.querySelectorAll('#pchips .chip').forEach((b) => b.classList.toggle('on', b.dataset.k === k));
+  S.prodFilter = k; hapticSel();
+  document.querySelectorAll('#pchips .pill').forEach((b) => b.classList.toggle('on', b.dataset.k === k));
   $('#plist').innerHTML = prodList();
 }
 function prodList() {
@@ -985,17 +1179,17 @@ function prodList() {
   const list = S.adminProducts.filter((p) => (S.prodFilter === 'all' || (S.prodFilter === 'on') === !!p.active) && (!q || p.title.toLowerCase().includes(q)));
   if (!list.length) return empty('search', 'Ничего не нашли', 'Измените поиск или фильтр.');
   const groups = [...S.adminGames.map((g) => ({ t: g.title, l: list.filter((p) => p.game_id === g.id) })), { t: 'Без игры', l: list.filter((p) => !p.game_id) }].filter((g) => g.l.length);
-  return groups.map((g) => `<div class="sec"><h2>${esc(g.t)}</h2><span>${g.l.length}</span></div><div class="panel" style="padding:2px 14px">${g.l.map((p) => `
-    <div class="li"><button class="row grow" style="text-align:left;gap:12px" onclick="go('aproduct',{id:${p.id}})">
-      <div class="tile r-${rarity(p)}" style="${p.active ? '' : 'opacity:.4'}">${ic(secIcon(p.section))}</div>
-      <div class="grow"><div class="sm" style="font-weight:700;${p.active ? '' : 'color:var(--mut)'}">${esc(p.title)}</div>
-      <div class="xs mut">${priceOf(p)}${p.kind !== 'physical' && p.price_usd ? ` / ${usd(p.price_usd)}` : ''}, продано ${p.sold}</div></div></button>
-      <button class="switch ${p.active ? 'on' : ''}" onclick="toggleProduct(${p.id},this)" aria-label="Показывать в магазине"></button></div>`).join('')}</div>`).join('');
+  return groups.map((g) => `<div class="sec"><h2>${esc(g.t)}</h2><span>${g.l.length}</span></div>${g.l.map((p) => `
+    <div class="li"><button class="row grow tap" style="gap:12px" onclick="go('aproduct',{id:${p.id}})">
+      <span class="gl r-${rarity(p)}" style="${p.active ? '' : 'opacity:.4'}">${ic(secIcon(p.section))}</span>
+      <span class="grow"><span class="sm" style="display:block;font-weight:600;${p.active ? '' : 'color:var(--mut)'}">${esc(p.title)}${isHit(p) ? ' <span class="hit xs">Хит</span>' : ''}</span>
+      <span class="xs mut">${priceOf(p)}${p.kind !== 'physical' && p.price_usd ? ` / ${usd(p.price_usd)}` : ''}, продано ${p.sold}</span></span></button>
+      <button class="switch ${p.active ? 'on' : ''}" onclick="toggleProduct(${p.id},this)" aria-label="Показывать в магазине"></button></div>`).join('')}`).join('');
 }
 async function toggleProduct(id, el) {
   const p = S.adminProducts.find((x) => x.id === id);
   const next = !p.active;
-  el.classList.toggle('on', next); haptic();
+  el.classList.toggle('on', next); hapticSel();
   try { await api('admin_product_toggle', { id, active: next }); p.active = next ? 1 : 0; toast(next ? 'Товар снова в продаже' : 'Товар скрыт из маркета', 'ok'); reloadCatalog(); }
   catch (e) { el.classList.toggle('on', !next); toast(e.message, 'err'); }
 }
@@ -1015,9 +1209,9 @@ V.aproduct = async (c) => {
     const st = await api('admin_stock', { product_id: c.id });
     stock = `<div class="form-sec"><h3>Склад ключей</h3>
       <div class="xs mut" style="margin:4px 0 10px">Свободно ${st.free.length}, выдано ${st.sold}.${S.data.demoAuto ? ' Пока склад пуст, покупатель получает тестовые данные.' : ''}</div>
-      <textarea id="stock-add" placeholder="Вставьте ключи, по одному в строке"></textarea>
-      <button class="btn" style="margin-top:10px" onclick="stockAdd(${c.id})">${ic('plus', 's')} Добавить на склад</button>
-      ${st.free.length ? `<div style="margin-top:12px">${st.free.map((s) => `<div class="kv"><div class="grow v sm">${esc(s.content)}</div><button class="copy" onclick="stockDel(${s.id})" aria-label="Удалить">${ic('trash', 's')}</button></div>`).join('')}</div>` : ''}
+      <textarea id="stock-add" style="background:var(--s2)" placeholder="Вставьте ключи, по одному в строке"></textarea>
+      <button class="btn" style="margin-top:10px;background:var(--s2)" onclick="stockAdd(${c.id})">${ic('plus', 's')} Добавить на склад</button>
+      ${st.free.length ? `<div style="margin-top:12px">${st.free.map((s) => `<div class="kv" style="background:var(--s2)"><div class="grow v sm">${esc(s.content)}</div><button class="copy" onclick="stockDel(${s.id})" aria-label="Удалить">${ic('trash', 's')}</button></div>`).join('')}</div>` : ''}
     </div>`;
   }
   const opt = (v, t, sel) => `<option value="${esc(v)}" ${String(v) === String(sel ?? '') ? 'selected' : ''}>${esc(t)}</option>`;
@@ -1025,7 +1219,7 @@ V.aproduct = async (c) => {
   const BADGES = ['Хит', 'Редкое', 'Новинка', 'Выгодно'];
   return `<div class="title">${c.id ? 'Редактирование' : 'Новый товар'}</div>
     <div class="preview">${itemRow(previewOf(c, p))}</div>
-    <div class="xs dim" style="margin:6px 2px 0">Так товар выглядит в маркете</div>
+    <div class="xs dim" style="margin:2px 0 0">Так товар выглядит в маркете</div>
     <div class="form-sec"><h3>Основное</h3>
       <div class="field"><label>Название <i>*</i></label><input id="f-title" value="${esc(p.title || '')}" oninput="livePreview()"></div>
       <div class="grid2">
@@ -1033,7 +1227,7 @@ V.aproduct = async (c) => {
         <div class="field"><label>Раздел</label><select id="f-section" onchange="livePreview()">${Object.entries(S.data.sections).map(([k, s]) => opt(k, s.title, p.section)).join('')}</select></div>
       </div>
       <div class="field"><label>Бейдж</label><select id="f-badge" onchange="livePreview()">${opt('', 'Без бейджа', p.badge)}${BADGES.map((b) => opt(b, b, p.badge)).join('')}${p.badge && !BADGES.includes(p.badge) ? opt(p.badge, p.badge, p.badge) : ''}</select>
-        <div class="hint">Товары с бейджем попадают в «Сейчас берут». Хит подсвечивается золотом, Редкое — фиолетовым, остальные — синим.</div></div>
+        <div class="hint">Хиты стоят первыми в категориях и попадают в «Сейчас берут».</div></div>
       <div class="field"><label>Описание</label><textarea id="f-desc" rows="5">${esc(p.description || '')}</textarea></div>
     </div>
     <div class="form-sec"><h3>Цена и выдача</h3>
@@ -1046,11 +1240,11 @@ V.aproduct = async (c) => {
       ${c.kind === 'digital_auto' ? '' : `<div class="field"><label>Сколько в наличии</label><input id="f-stock" type="number" min="0" inputmode="numeric" placeholder="Без ограничений" value="${p.stock ?? ''}"></div>`}
       <div class="field"><label>Что спросить у покупателя</label><input id="f-ask" value="${esc(p.ask || '')}" placeholder="Например: UID и сервер"><div class="hint">Оставьте пустым, если ничего не нужно.</div></div>
     </div>
-    <label class="form-sec row" style="cursor:pointer"><div class="grow"><b class="sm">Показывать в маркете</b><div class="xs mut">Скрытый товар видите только вы</div></div>
-      <input type="checkbox" id="f-active" ${p.active ? 'checked' : ''} style="display:none" onchange="this.nextElementSibling.classList.toggle('on',this.checked)"><span class="switch ${p.active ? 'on' : ''}"></span></label>
+    <label class="form-sec row" style="cursor:pointer"><span class="grow"><b class="sm" style="display:block">Показывать в маркете</b><span class="xs mut">Скрытый товар видите только вы</span></span>
+      <input type="checkbox" id="f-active" ${p.active ? 'checked' : ''} style="display:none" onchange="this.nextElementSibling.classList.toggle('on',this.checked);hapticSel()"><span class="switch ${p.active ? 'on' : ''}"></span></label>
     ${stock}
-    ${c.id ? `<button class="btn sm line" style="margin:14px auto 0" onclick="shareProduct(${c.id})">${ic('link', 's')} Ссылка на товар для поста</button>` : ''}
-    <div class="bar"><button class="btn gold" onclick="saveProduct(${c.id || 0})">${ic('check')} ${c.id ? 'Сохранить' : 'Создать товар'}</button></div>`;
+    ${c.id ? `<button class="btn sm ghost" style="margin:14px auto 0" onclick="shareProduct(${c.id})">${ic('link', 's')} Ссылка на товар для поста</button>` : ''}
+    <div class="bar"><button class="btn acc" onclick="saveProduct(${c.id || 0})">${ic('check')} ${c.id ? 'Сохранить' : 'Создать товар'}</button></div>`;
 };
 function previewOf(c, d) {
   return { ...c.base, ...d, id: 0, kind: c.kind, title: d.title || 'Название товара', price_stars: +d.price || 0, price_usd: +d.price_usd || null, available: null, reviews: 0, game_id: d.game_id ? +d.game_id : null, badge: d.badge || null };
@@ -1094,18 +1288,155 @@ async function stockDel(id) {
   try { cur().draft = readDraft(); await api('admin_stock_delete', { id }); reloadCatalog(); refresh(); } catch (e) { toast(e.message, 'err'); }
 }
 
-A.promos = async () => {
+/* Люди: пользователи, журнал действий, права */
+const avColor = (id) => `hsl(${(Number(id) * 47) % 360} 46% 46%)`;
+const avatar = (id, name, size) => `<span class="uav" style="background:${avColor(id)};${size ? `width:${size}px;height:${size}px;font-size:${Math.round(size / 2.4)}px` : ''}">${esc((String(name || '?').trim()[0] || '?').toUpperCase())}</span>`;
+const roleTag = (r) => (r === 'owner' ? '<span class="role">владелец</span>' : r ? '<span class="role">админ</span>' : '');
+
+// человеческое описание действия: [иконка, текст в HTML, оттенок]
+function evText(e) {
+  const d = e.data || {};
+  const t = (s) => `«${esc(String(s || '').slice(0, 80))}»`;
+  const sum = d.total != null ? ` на ${money(d.total, d.currency)}` : '';
+  const M = {
+    open: ['bag', d.start ? `Открыл маркет по ссылке ${esc(d.start)}` : 'Открыл маркет'],
+    start: ['game', d.param ? `Запустил бота по ссылке ${esc(d.param)}` : 'Запустил бота'],
+    cmd: ['chat', `Отправил команду ${esc(d.cmd)}`],
+    bot_text: ['chat', `Написал боту: ${t(d.text)}`],
+    view_game: ['game', `Смотрел игру ${esc(d.title)}`],
+    view_section: ['grid', `Открыл категорию ${t(d.title)}`],
+    view_product: ['eye', `Смотрел товар ${t(d.title)}`],
+    search: ['search', `Искал ${t(d.q)}`],
+    sort: ['sort', d.mode === 'price' ? 'Включил сортировку «сначала дешёвые»' : 'Вернул сортировку «популярные»'],
+    cart_add: ['bag', `${d.buy ? 'Нажал «Купить»' : 'Добавил в корзину'} ${t(d.title)}${d.qty > 1 ? ` ×${d.qty}` : ''}`],
+    cart_remove: ['x', `Убрал из корзины ${t(d.title)}`],
+    checkout_open: ['bag', 'Перешёл к оформлению'],
+    tab: ['grid', `Открыл вкладку «${esc({ home: 'Маркет', cart: 'Корзина', orders: 'Заказы', admin: 'Управление' }[d.name] || d.name)}»`],
+    promo: ['tag', d.ok ? `Применил промокод ${esc(d.code)}` : `Ввёл несуществующий промокод ${esc(d.code)}`, d.ok ? '' : 'badc'],
+    order_new: ['box', `Создал заказ #${d.order}${sum}`],
+    paid: ['coins', `Оплатил заказ #${d.order}${sum}`, 'good'],
+    cancel: ['x', `Отменил заказ #${d.order}`],
+    confirm: ['check', `Подтвердил получение по заказу #${d.order}`, 'good'],
+    dispute: ['alert', `Открыл спор по заказу #${d.order}: ${t(d.reason)}`, 'badc'],
+    review: ['star', `Оставил отзыв ${d.rating} из 5 на заказ #${d.order}`],
+    message: ['chat', `Написал продавцу по заказу #${d.order}${d.text ? `: ${t(d.text)}` : ''}`],
+    loot_open: ['spark', `Открыл окно выдачи заказа #${d.order}`],
+    copy: ['copy', `Скопировал данные заказа #${d.order}`],
+    onboarding: ['help', d.done ? 'Прошёл обучение' : `Закрыл обучение на шаге ${d.skipped}`],
+    admin_message: ['shield', `Ответил покупателю по заказу #${d.order}`, 'adm'],
+    admin_deliver: ['shield', `Выдал заказ #${d.order}`, 'adm'],
+    admin_complete: ['shield', `Завершил заказ #${d.order}`, 'adm'],
+    admin_refund: ['shield', `Оформил возврат по заказу #${d.order}`, 'adm'],
+    admin_cancel: ['shield', `Отменил заказ #${d.order}`, 'adm'],
+    admin_product: ['shield', `${d.created ? 'Создал' : 'Изменил'} товар ${t(d.title)}`, 'adm'],
+    admin_toggle: ['shield', `${d.active ? 'Вернул в продажу' : 'Скрыл'} товар ${t(d.title)}`, 'adm'],
+    admin_stock: ['shield', `Добавил ${d.added} ключей на склад`, 'adm'],
+    admin_promo: ['shield', `Создал промокод ${esc(d.code)} на ${d.percent}%`, 'adm'],
+    admin_broadcast: ['shield', `Сделал рассылку на ${d.users} пользователей`, 'adm'],
+    admin_grant: ['shield', `Назначил администратором ${esc(d.name)}`, 'adm'],
+    admin_revoke: ['shield', `Снял права администратора с ${esc(d.name)}`, 'adm'],
+  };
+  return M[e.type] || ['activity', esc(e.type)];
+}
+function timeline(events) {
+  let day = '';
+  return events.map((e) => {
+    const [icn, txt, cls] = evText(e);
+    const dl = dayLabel(e.created_at);
+    const head = dl !== day ? `<div class="tl-day">${(day = dl)}</div>` : '';
+    return `${head}<div class="tl"><span class="ti ${cls || ''}">${ic(icn, 's')}</span><div class="grow"><div class="tt">${txt}</div><div class="tm">${timeStr(e.created_at)}</div></div></div>`;
+  }).join('');
+}
+
+A.people = async () => {
+  const seg = `<div class="seg" style="margin:12px 0 4px"><button class="${S.people === 'users' ? 'on' : ''}" onclick="S.people='users';hapticSel();render(false,'tab')">Пользователи</button><button class="${S.people === 'feed' ? 'on' : ''}" onclick="S.people='feed';hapticSel();render(false,'tab')">Лента действий</button></div>`;
+  if (S.people === 'feed') {
+    const { events } = await api('admin_feed', {});
+    S.feed = events;
+    return seg + (events.length ? `<div id="feed">${feedRows(events)}</div>${events.length >= 150 ? `<button class="btn ghost" style="margin-top:14px" onclick="moreFeed(this)">Показать ещё</button>` : ''}` : empty('activity', 'Пока тихо', 'Действия пользователей появятся здесь.'));
+  }
+  const r = await api('admin_users', { q: S.peopleQ, filter: S.peopleFilter });
+  const f = [['all', 'Все', r.counts.all], ['today', 'Сегодня', r.counts.today], ['buyers', 'Покупатели', r.counts.buyers], ['admins', 'Админы', r.counts.admins]];
+  return seg + `<div class="search" style="margin:12px 0 10px">${ic('search')}<input placeholder="Имя, @username или ID" value="${esc(S.peopleQ)}" oninput="S.peopleQ=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>render(false),350)"></div>
+    <div class="pills">${f.map(([k, t, n]) => `<button class="pill ${S.peopleFilter === k ? 'on' : ''}" onclick="S.peopleFilter='${k}';hapticSel();render(false,'tab')">${t}<em>${n}</em></button>`).join('')}</div>
+    <div style="margin-top:6px">${r.users.length ? r.users.map((u) => `<button class="li tap" onclick="go('auser',{id:${u.id}})">
+      ${avatar(u.id, u.first_name || u.username)}
+      <span class="grow"><b style="font-weight:650">${esc(u.first_name || u.username || 'Без имени')}</b>${roleTag(u.role)}
+        <span class="xs mut" style="display:block">${u.username ? '@' + esc(u.username) + ', ' : ''}${u.orders ? `${u.orders} ${plural(u.orders, 'заказ', 'заказа', 'заказов')}` : 'без заказов'}</span></span>
+      <span class="xs dim" style="text-align:right">${ago(u.last_seen)}</span></button>`).join('') : empty('users', 'Никого не нашли', 'Измените поиск или фильтр.')}</div>`;
+};
+function feedRows(events) {
+  return events.map((e) => {
+    const [, txt, cls] = evText(e);
+    return `<button class="li tap" onclick="go('auser',{id:${e.user_id}})" style="align-items:flex-start">${avatar(e.user_id, e.first_name || e.username, 34)}
+      <span class="grow"><span class="sm" style="display:block"><b style="font-weight:650">${esc(e.first_name || e.username || e.user_id)}</b> <span style="color:${cls === 'good' ? 'var(--ok)' : cls === 'badc' ? 'var(--bad)' : 'var(--tx2)'}">${txt.charAt(0).toLowerCase() + txt.slice(1)}</span></span>
+      <span class="xs dim">${ago(e.created_at)}</span></span></button>`;
+  }).join('');
+}
+async function moreFeed(btn) {
+  btn.disabled = true;
+  try {
+    const { events } = await api('admin_feed', { before: S.feed[S.feed.length - 1].id });
+    S.feed.push(...events);
+    $('#feed').insertAdjacentHTML('beforeend', feedRows(events));
+    if (events.length < 150) btn.remove(); else btn.disabled = false;
+  } catch (e) { toast(e.message, 'err'); btn.disabled = false; }
+}
+
+V.auser = async (c) => {
+  const r = await api('admin_user', { id: c.id });
+  c.u = r;
+  const u = r.user;
+  const paid = r.orders.filter((o) => ['processing', 'delivered', 'completed', 'dispute'].includes(o.status));
+  const st = paid.filter((o) => o.currency === 'XTR').reduce((a, o) => a + o.total, 0);
+  const cr = paid.filter((o) => o.currency === 'USD').reduce((a, o) => a + o.total, 0);
+  const name = u.first_name || u.username || 'Без имени';
+  const roleRow = r.role === 'owner' ? '<span class="xs mut">Владелец магазина, права не меняются</span>'
+    : r.role === 'env_admin' ? '<span class="xs mut">Назначен в настройках Cloudflare (ADMIN_IDS)</span>'
+    : r.canManage ? '<span class="xs mut">Доступ к вкладке «Управление»</span>' : '<span class="xs mut">Менять права может только владелец</span>';
+  const canToggle = r.canManage && !['owner', 'env_admin'].includes(r.role);
+  return `<div class="row" style="gap:14px;margin:6px 0 4px">${avatar(u.id, name, 58)}<div class="grow"><div class="ph1" style="margin:0;font-size:24px">${esc(name)}</div>
+      <div class="sm mut">${u.username ? `<button class="tap" style="color:var(--rare);font-weight:600" onclick="tg.openTelegramLink('https://t.me/${esc(u.username)}')">@${esc(u.username)}</button>, ` : ''}<button class="tap" onclick="copy('${u.id}')">ID ${u.id}</button></div></div></div>
+    <div class="stats4">
+      <div><b>${paid.length}</b><span>${plural(paid.length, 'заказ', 'заказа', 'заказов')}</span></div>
+      <div><b>${st}</b><span>${plural(st, 'звезда', 'звезды', 'звёзд')}</span></div>
+      <div><b>${usd(cr)}</b><span>в крипте</span></div>
+      <div><b>${r.eventsTotal}</b><span>${plural(r.eventsTotal, 'действие', 'действия', 'действий')}</span></div>
+    </div>
+    <div class="xs mut" style="margin-top:10px">Впервые: ${dateStr(u.created_at)}. Последний раз: ${ago(u.last_seen)}.</div>
+    <div class="sec"><h2>Права</h2></div>
+    <div class="form-sec row" style="margin-top:0"><span class="grow"><b class="sm" style="display:block">Администратор</b>${roleRow}</span>
+      <button class="switch ${r.role ? 'on' : ''}" ${canToggle ? '' : 'disabled'} onclick="setAdmin(${u.id}, ${!r.role})" aria-label="Администратор"></button></div>
+    ${r.orders.length ? `<div class="sec"><h2>Заказы</h2><span>${r.orders.length}</span></div><div>${r.orders.slice(0, 10).map((o) => orderRow(o, true)).join('')}</div>` : ''}
+    <div class="sec"><h2>Действия</h2><span>${r.eventsTotal > r.events.length ? `последние ${r.events.length}` : ''}</span></div>
+    ${r.events.length ? timeline(r.events) : '<p class="sm mut">Пока ничего.</p>'}`;
+};
+async function setAdmin(id, on) {
+  const name = (cur().u && (cur().u.user.first_name || cur().u.user.username)) || 'пользователя';
+  if (!(await ask(on ? `Назначить ${name} администратором? Он получит доступ к заказам, товарам и покупателям.` : `Снять права администратора с ${name}?`))) return;
+  try { await api('admin_set_admin', { id, admin: on }); hapticN(); toast(on ? 'Администратор назначен' : 'Права сняты', 'ok'); refresh(); }
+  catch (e) { hapticN('error'); toast(e.message, 'err'); }
+}
+
+/* Промо: промокоды и рассылка */
+A.promo = async () => {
   const { promos } = await api('admin_promos');
-  return `<div class="panel">
-      <b class="disp">Новый промокод</b>
+  return `<div class="sec" style="margin-top:14px"><h2>Промокоды</h2><span>${promos.length}</span></div>
+    ${promos.length ? promos.map((p) => `<div class="li"><span class="gl r-legend">${ic('tag')}</span><div class="grow"><b>${esc(p.code)}</b> <span class="mut">−${p.percent}%</span><div class="xs mut">${p.uses_left === null ? 'без ограничений' : `осталось ${p.uses_left} ${plural(p.uses_left, 'применение', 'применения', 'применений')}`}</div></div><button class="copy" onclick="copy('${esc(p.code)}')" aria-label="Скопировать">${ic('copy', 's')}</button><button class="copy" onclick="delPromo('${esc(p.code)}')" aria-label="Удалить">${ic('trash', 's')}</button></div>`).join('') : '<p class="sm mut">Промокодов нет.</p>'}
+    <div class="form-sec"><h3>Новый промокод</h3>
       <div class="grid2">
         <div class="field"><label>Код</label><input id="pr-code" placeholder="SALE15" oninput="this.value=this.value.toUpperCase()"></div>
         <div class="field"><label>Скидка, %</label><input id="pr-pct" type="number" min="1" max="90" inputmode="numeric" placeholder="15"></div>
       </div>
       <div class="field"><label>Сколько раз можно применить</label><input id="pr-uses" type="number" min="0" inputmode="numeric" placeholder="Без ограничений"></div>
-      <button class="btn gold" style="margin-top:14px" onclick="savePromo()">${ic('plus', 's')} Создать промокод</button></div>
-    <div class="sec"><h2>Действуют сейчас</h2><span>${promos.length}</span></div>
-    ${promos.length ? `<div class="panel" style="padding:2px 14px">${promos.map((p) => `<div class="li"><div class="tile r-legend">${ic('tag')}</div><div class="grow"><b>${esc(p.code)}</b> <span class="mut">−${p.percent}%</span><div class="xs mut">${p.uses_left === null ? 'без ограничений' : `осталось ${p.uses_left} ${plural(p.uses_left, 'применение', 'применения', 'применений')}`}</div></div><button class="copy" onclick="copy('${esc(p.code)}')" aria-label="Скопировать">${ic('copy', 's')}</button><button class="copy" onclick="delPromo('${esc(p.code)}')" aria-label="Удалить">${ic('trash', 's')}</button></div>`).join('')}</div>` : empty('tag', 'Промокодов нет', 'Создайте первый, чтобы запустить акцию.')}`;
+      <button class="btn acc" style="margin-top:14px" onclick="savePromo()">${ic('plus', 's')} Создать промокод</button></div>
+    <div class="sec"><h2>Рассылка</h2></div>
+    <div class="form-sec" style="margin-top:0">
+      <div class="xs mut">Сообщение придёт всем пользователям в чат с ботом вместе с кнопкой «Открыть маркет».</div>
+      <div class="field"><textarea id="mail-text" rows="5" placeholder="Скидка 20% на все ключи до воскресенья по промокоду LOOT20" oninput="$('#mail-prev').textContent=this.value||'Здесь появится текст сообщения'"></textarea></div>
+      <div class="xs mut" style="margin:14px 0 6px;font-weight:650">Так увидит покупатель</div>
+      <div class="msg them pre" id="mail-prev" style="max-width:100%;animation:none">Здесь появится текст сообщения</div>
+      <button class="btn acc" style="margin-top:14px" onclick="sendMail()">${ic('send', 's')} Отправить всем</button></div>`;
 };
 async function savePromo() {
   try { await api('admin_promo_save', { code: $('#pr-code').value, percent: $('#pr-pct').value, uses_left: $('#pr-uses').value }); hapticN(); toast('Промокод создан', 'ok'); render(false); }
@@ -1115,14 +1446,6 @@ async function delPromo(code) {
   if (!(await ask(`Удалить промокод ${code}?`))) return;
   try { await api('admin_promo_delete', { code }); toast('Промокод удалён', 'ok'); render(false); } catch (e) { toast(e.message, 'err'); }
 }
-
-A.mail = () => `<div class="panel">
-    <b class="disp">Сообщение всем покупателям</b>
-    <div class="xs mut" style="margin:4px 0 12px">Придёт в чат с ботом вместе с кнопкой «Открыть маркет». Подходит для новинок, скидок и акций.</div>
-    <textarea id="mail-text" rows="6" placeholder="Скидка 20% на все ключи до воскресенья по промокоду LOOT20" oninput="$('#mail-prev').textContent=this.value||'Здесь появится текст сообщения'"></textarea>
-    <div class="xs mut" style="margin:14px 0 6px;font-weight:700">Так увидит покупатель</div>
-    <div class="msg them pre" id="mail-prev" style="max-width:100%">Здесь появится текст сообщения</div>
-    <button class="btn gold" style="margin-top:14px" onclick="sendMail()">${ic('send', 's')} Отправить всем</button></div>`;
 async function sendMail() {
   const text = $('#mail-text').value.trim();
   if (!text) return toast('Напишите текст сообщения', 'err');
@@ -1134,33 +1457,40 @@ async function sendMail() {
 /* ═══════════════ Запуск ═══════════════ */
 async function start() {
   if (!tg || !tg.initData) {
-    $('#app').innerHTML = empty('game', 'LOOTBOX', 'Откройте магазин через Telegram-бота.');
+    document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    $('#app').innerHTML = empty('grid', 'LOOTBOX', 'Откройте магазин через Telegram-бота.');
     $('.tabbar').style.display = 'none';
     return;
   }
   tg.ready(); tg.expand();
-  try { tg.setHeaderColor('#10131c'); tg.setBackgroundColor('#10131c'); tg.setBottomBarColor && tg.setBottomBarColor('#10131c'); } catch (e) {}
+  applyTheme();
+  tg.onEvent('themeChanged', applyTheme);
   try { tg.disableVerticalSwipes(); } catch (e) {}
   tg.BackButton.onClick(back);
+  const sp = (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '';
+  let onb = null;
   try {
-    const [d, cart, del] = await Promise.all([api('bootstrap'), store.get('cart'), store.get('delivery')]);
-    S.data = d;
+    const [d, cart, del, sort, ob] = await Promise.all([api('bootstrap', { start: sp }), store.get('cart'), store.get('delivery'), store.get('sort'), store.get('onb')]);
+    S.data = d; onb = ob;
     try { S.cart = JSON.parse(cart || '[]').filter((i) => i && i.id); } catch (e) { S.cart = []; }
     try { S.delivery = JSON.parse(del || '{}') || {}; } catch (e) { S.delivery = {}; }
+    if (sort === 'price') S.sort = 'price';
+    lastCartN = S.cart.reduce((a, i) => a + i.qty, 0);
   } catch (e) {
     $('#app').innerHTML = errorBox(e.message);
     return;
   }
   if (S.data.admin) api('admin_orders', { filter: 'active' }).then((r) => { S.counts.attention = r.orders.length; renderTabbar(); }).catch(() => {});
   const h = (location.hash || '').slice(1);
-  const sp = (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '';
   let m;
   if ((m = /^p[=_](\d+)$/.exec(h) || /^p_(\d+)$/.exec(sp)) && P(m[1])) S.stack = [{ v: 'home' }, { v: 'product', id: +m[1] }];
   else if ((m = /^o[=_](\d+)$/.exec(h) || /^o_(\d+)$/.exec(sp))) S.stack = [{ v: 'orders' }, { v: 'order', id: +m[1] }];
   else if ((m = /^ao=(\d+)$/.exec(h)) && S.data.admin) S.stack = [{ v: 'admin' }, { v: 'aorder', id: +m[1] }];
   else if (h === 'orders') S.stack = [{ v: 'orders' }];
   else if (h === 'admin' && S.data.admin) S.stack = [{ v: 'admin' }];
-  render(true);
+  await render(true, 'tab');
+  // обучение — один раз, при первом открытии главной
+  if (onb !== '1' && S.stack.length === 1 && S.stack[0].v === 'home') setTimeout(openOnboarding, 450);
 }
 start();
 </script>
