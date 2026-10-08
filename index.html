@@ -189,16 +189,40 @@ svg.i.star{fill:var(--acc);stroke:none}
 .copy{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--s2);color:var(--tx2)}
 
 /* ── Чат ── */
-.chat{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding:2px}
-.msg{max-width:82%;padding:9px 13px;border-radius:18px;font-size:14px;white-space:pre-wrap;word-break:break-word;animation:msgIn .35s var(--spring) both}
-@keyframes msgIn{from{opacity:0;transform:translateY(6px) scale(.97)}}
-.msg .mt{font-size:10px;opacity:.6;margin-top:3px;text-align:right}
-.msg.me{align-self:flex-end;background:var(--acc);color:var(--acc-ink);border-bottom-right-radius:6px}
+.chatbox{background:var(--s1);border-radius:22px;overflow:hidden;margin-top:6px}
+.chat-h{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.chat-h .cav{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--acc);color:var(--acc-ink)}
+.chat-h b{display:block;font-weight:650;line-height:1.2}
+.chat-h .on{font-size:12.5px;color:var(--mut);display:inline-flex;align-items:center;gap:6px}
+.chat-h .on.dot-ok:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.chat{display:flex;flex-direction:column;max-height:400px;min-height:120px;overflow-y:auto;padding:12px 12px 10px;scroll-behavior:smooth}
+.msg{position:relative;max-width:80%;padding:8px 12px 7px;border-radius:18px;font-size:14.5px;line-height:1.4;white-space:pre-wrap;word-break:break-word;margin-top:10px}
+.msg.cont{margin-top:3px}
+.msg.new{animation:msgIn .4s var(--spring) both}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.96)}}
+.msg .mt{float:right;margin:6px 0 -3px 10px;font-size:11px;line-height:1;opacity:.5;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px}
+.msg .mt svg{width:13px;height:13px}
+.msg.me{align-self:flex-end;background:var(--tx);color:var(--bg);border-bottom-right-radius:6px}
 .msg.them{align-self:flex-start;background:var(--s2);border-bottom-left-radius:6px}
-.msg.sys{align-self:center;background:transparent;color:var(--mut);font-size:13px;text-align:center;animation:none}
-.chatin{display:flex;gap:8px;margin-top:10px}
-.chatin input{background:var(--s2)}
-.chatin button{flex:none;width:50px;border-radius:14px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center}
+.msg.me.cont-next{border-bottom-right-radius:18px;border-top-right-radius:18px}
+.msg.sending{opacity:.6}
+.sysmsg{align-self:center;max-width:88%;margin:12px 0 2px;padding:7px 12px;border-radius:12px;background:var(--s2);font-size:12.5px;color:var(--mut);text-align:center;line-height:1.4}
+.sysmsg b{color:var(--tx2);font-weight:650}
+.sysmsg.bad{background:color-mix(in srgb,var(--bad) 11%,transparent);color:var(--bad)}
+.sysmsg.bad b{color:var(--bad)}
+.sysmsg.good b{color:var(--ok)}
+.day-sep{align-self:center;font-size:12px;font-weight:600;color:var(--dim);margin:12px 0 0}
+.chat-empty{margin:auto;text-align:center;color:var(--mut);font-size:13.5px;padding:10px 20px}
+.quick{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 12px 10px}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;padding:7px 12px;border-radius:999px;background:var(--s2);font-size:13px;font-weight:600;color:var(--tx2);white-space:nowrap}
+.composer{display:flex;align-items:flex-end;gap:8px;padding:10px 12px 12px;border-top:1px solid var(--line)}
+.composer textarea{flex:1;min-height:42px;max-height:120px;resize:none;border-radius:21px;padding:10px 16px;background:var(--s2);border:1px solid transparent;line-height:1.4;font-size:15px}
+.composer textarea:focus{border-color:var(--line)}
+.composer textarea:focus-visible{outline:none}
+.send{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);transition:transform .45s var(--spring),background-color .2s,color .2s}
+.send svg{width:19px;height:19px;stroke-width:2.2}
+.send.off{background:var(--s3);color:var(--dim);transform:scale(.92)}
 
 /* ── Нижнее меню ── */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
@@ -384,6 +408,8 @@ const ICONS = {
   help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
   activity: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
   arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  up: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+  checks: '<path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/>',
 };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 const SECTION_ICON = { accounts: 'user', currency: 'gem', items: 'sword', keys: 'key', boost: 'rocket', topup: 'wallet', gear: 'headphones' };
@@ -513,7 +539,7 @@ function applyTheme() {
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   try { tg.setHeaderColor(bg); tg.setBackgroundColor(bg); tg.setBottomBarColor && tg.setBottomBarColor(bg); } catch (e) {}
 }
-const PRESS = '.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.chatin button';
+const PRESS = '.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.send,.quick button';
 let pressed = null;
 document.addEventListener('pointerdown', (e) => {
   const el = e.target.closest(PRESS);
@@ -1000,21 +1026,101 @@ function itemsBlock(o) {
     <div class="sum total"><span>Итого</span><span class="num">${money(o.total, o.currency)}</span></div>
     <div class="xs mut" style="margin-top:8px">${{ stars: 'Звёзды Telegram', crypto: 'Криптовалюта через CryptoBot' }[o.method] || ''}, ${dateStr(o.created_at)}</div></div>`;
 }
+// ── Чат по заказу ──
+const QUICK = {
+  buyer: ['Когда будет готово?', 'Данные не подходят', 'Всё работает, спасибо!'],
+  seller: ['Заказ в работе, скоро будет готово', 'Проверьте, пожалуйста, ещё раз', 'Спасибо за покупку!'],
+};
+function chatItems(c, role) {
+  const o = c.data.order;
+  const items = [];
+  if (o.paid_at) items.push({ sys: true, cls: 'good', html: `<b>Заказ оплачен</b>, ${timeStr(o.paid_at)}`, t: o.paid_at });
+  for (const m of c.data.messages) {
+    const DISPUTE = /^(⚠\uFE0F?\s*)?Открыт спор:\s*/;
+    if (m.sender === 'system' || DISPUTE.test(m.text)) items.push({ sys: true, cls: 'bad', html: `<b>Открыт спор</b><br>${esc(m.text.replace(DISPUTE, ''))}`, t: m.created_at });
+    else items.push({ ...m, t: m.created_at, me: m.sender === role });
+  }
+  return items;
+}
+function chatHtml(c, role) {
+  const items = chatItems(c, role);
+  const seenN = c.chatSeen || 0;
+  let day = '', html = '';
+  const msgs = items.filter((x) => !x.sys).length;
+  let mi = 0;
+  items.forEach((x, i) => {
+    const dl = dayLabel(x.t);
+    if (dl !== day) { day = dl; html += `<div class="day-sep">${dl}</div>`; }
+    if (x.sys) { html += `<div class="sysmsg ${x.cls}">${x.html}</div>`; return; }
+    const prev = items[i - 1], next = items[i + 1];
+    const cont = prev && !prev.sys && prev.me === x.me && x.t - prev.t < 300 && dayLabel(prev.t) === dl;
+    const isNew = mi++ >= seenN && c.chatSeen !== undefined;
+    html += `<div class="msg ${x.me ? 'me' : 'them'} ${cont ? 'cont' : ''} ${isNew ? 'new' : ''} ${x.sending ? 'sending' : ''}">${esc(x.text)}<span class="mt">${x.sending ? ic('clock') : timeStr(x.t)}${x.me && !x.sending ? ic('checks') : ''}</span></div>`;
+  });
+  c.chatSeen = msgs;
+  if (!msgs) html += `<div class="chat-empty">${role === 'buyer' ? 'Есть вопрос по заказу? Напишите — продавец получит сообщение в Telegram и ответит здесь.' : 'Покупатель пока ничего не писал.'}</div>`;
+  return html;
+}
 function chatBlock(c, role) {
   const o = c.data.order;
   if (['pending', 'paying', 'cancelled'].includes(o.status)) return '';
-  const msgs = c.data.messages;
-  return `<div class="sec"><h2>${role === 'buyer' ? 'Чат с продавцом' : 'Чат с покупателем'}</h2></div><div class="box">
-    <div class="chat">${msgs.length ? msgs.map((m) => `<div class="msg ${m.sender === role ? 'me' : 'them'}">${esc(m.text)}<div class="mt">${dateStr(m.created_at)}</div></div>`).join('')
-      : `<div class="msg sys">${role === 'buyer' ? 'Есть вопрос по заказу? Напишите, продавец получит сообщение в Telegram.' : 'Сообщений пока нет'}</div>`}</div>
-    <div class="chatin"><input id="chat-in" placeholder="Сообщение" onkeydown="if(event.key==='Enter')sendMsg()" enterkeyhint="send"><button onclick="sendMsg()" aria-label="Отправить">${ic('send')}</button></div></div>`;
+  const who = role === 'buyer'
+    ? `<span class="cav">${ic('shield', 's')}</span><div class="grow"><b>Продавец ${esc(S.data.shop.name)}</b><span class="on dot-ok">обычно отвечает за 5 минут</span></div>`
+    : `${avatar(o.user_id, o.user_name, 38)}<div class="grow"><b>${esc(o.user_name)}</b><span class="on">${o.username ? '@' + esc(o.username) : 'покупатель'}</span></div>`;
+  const hasMsgs = c.data.messages.some((m) => m.sender === role);
+  return `<div class="sec"><h2>Чат по заказу</h2></div>
+    <div class="chatbox">
+      <div class="chat-h">${who}</div>
+      <div class="chat" id="chat">${chatHtml(c, role)}</div>
+      ${hasMsgs ? '' : `<div class="quick">${QUICK[role].map((q) => `<button onclick="quickMsg(this)">${q}</button>`).join('')}</div>`}
+      <div class="composer"><textarea id="chat-in" rows="1" placeholder="Сообщение" enterkeyhint="send" oninput="chatInput(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+        <button class="send off" id="send-btn" onclick="sendMsg()" aria-label="Отправить">${ic('up')}</button></div>
+    </div>`;
+}
+function chatInput(el) {
+  el.style.height = 'auto'; el.style.height = Math.min(120, el.scrollHeight + 2) + 'px';
+  $('#send-btn').classList.toggle('off', !el.value.trim());
+}
+function quickMsg(b) { const el = $('#chat-in'); el.value = b.textContent; chatInput(el); el.focus(); hapticSel(); }
+function updateChat(c) {
+  const box = $('#chat'); if (!box || cur() !== c) return;
+  const role = c.v === 'aorder' ? 'seller' : 'buyer';
+  box.innerHTML = chatHtml(c, role);
+  box.scrollTop = box.scrollHeight;
+  const q = document.querySelector('.quick'); if (q && c.data.messages.some((m) => m.sender === role)) q.remove();
 }
 async function sendMsg() {
   const el = $('#chat-in'), text = el.value.trim();
   if (!text) return;
-  el.value = ''; haptic();
-  await refreshOrderData(cur(), 'order_message', { text });
+  const c = cur();
+  el.value = ''; chatInput(el); haptic();
+  const role = c.v === 'aorder' ? 'seller' : 'buyer';
+  c.data.messages = [...c.data.messages, { sender: role, text, created_at: nowS(), sending: true }];
+  updateChat(c);
+  try {
+    const d = await api('order_message', { id: c.id, text });
+    c.chatSeen = 1e9; // своё сообщение уже показано — не анимировать повторно
+    c.data = d; updateChat(c);
+  } catch (e) {
+    c.data.messages = c.data.messages.filter((m) => !m.sending);
+    updateChat(c); el.value = text; chatInput(el);
+    toast(e.message, 'err');
+  }
 }
+// новые сообщения подтягиваются сами, пока открыт заказ
+setInterval(async () => {
+  const c = cur();
+  if (!c || !['order', 'aorder'].includes(c.v) || !c.data || document.visibilityState !== 'visible' || $('.sheet-bg')) return;
+  if (document.activeElement && document.activeElement.id === 'chat-in' && document.activeElement.value) return;
+  try {
+    const d = await api('order', { id: c.id });
+    if (cur() !== c) return;
+    const changedStatus = d.order.status !== c.data.order.status;
+    const newMsgs = d.messages.length !== c.data.messages.length;
+    c.data = d;
+    if (changedStatus) refresh(); else if (newMsgs) { updateChat(c); hapticSel(); }
+  } catch (e) {}
+}, 7000);
 
 V.order = (c) => {
   if (!c.data) { refreshOrderData(c); return loader(); }
