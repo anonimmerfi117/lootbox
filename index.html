@@ -269,7 +269,8 @@ svg.i.star{fill:var(--acc);stroke:none}
 .form-sec>.field:first-of-type{margin-top:12px}
 .form-sec .field input,.form-sec .field textarea,.form-sec .field select{background:var(--s2);border-color:transparent}
 .form-sec .field input:focus,.form-sec .field textarea:focus{border-color:var(--acc)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.grid2>*,.pfield .grow{min-width:0}
 .preview{pointer-events:none}
 .tl-day{font-size:13px;font-weight:700;color:var(--mut);margin:18px 0 4px}
 .tl{display:flex;gap:12px;padding:9px 0;align-items:flex-start}
@@ -328,6 +329,39 @@ svg.i.star{fill:var(--acc);stroke:none}
 @keyframes stamp{0%{opacity:0;transform:rotate(-12deg) scale(2.4)}100%{opacity:.95;transform:rotate(-12deg) scale(1)}}
 .loot .demo{display:flex;gap:10px;margin-top:16px;font-size:13px;color:var(--mut)}
 .loot .demo svg{color:var(--acc-tx);margin-top:1px}
+
+/* ── Поле выбора и окно со списком ── */
+.pfield{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 14px 8px 10px;border-radius:14px;background:var(--s2);text-align:left}
+.form-sec .pfield{background:var(--s2)}
+.pfield .pf-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--s1);color:var(--mut);flex:none}
+.pfield .pf-t{display:block;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pfield .pf-s{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pfield .chev{color:var(--dim);transition:transform .4s var(--spring)}
+.pfield.flash{animation:flash .7s var(--ease)}
+@keyframes flash{0%{box-shadow:inset 0 0 0 2px var(--acc)}100%{box-shadow:inset 0 0 0 2px transparent}}
+.mini-gt{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:9px;font-weight:800;letter-spacing:.02em;flex:none;text-align:center;line-height:1;padding:2px}
+.pick .sheet{padding:0;display:flex;flex-direction:column;max-height:86vh;overflow:hidden}
+.pick-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 20px 12px}
+.pick-h h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
+.pick-h .x{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--s1);color:var(--mut)}
+.pick-s{padding:0 20px 8px}
+.pick-s .search input{height:44px;background:var(--s1)}
+.pick-list{overflow-y:auto;padding:0 12px calc(18px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+.pk-g{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;padding:14px 8px 6px;font-size:13px;font-weight:700;color:var(--mut);background:var(--bg)}
+.pk-g span{font-weight:500;color:var(--dim)}
+.pk{display:flex;align-items:center;gap:12px;width:100%;padding:10px 8px;border-radius:14px;text-align:left;animation:pkIn .4s var(--ease) both}
+@keyframes pkIn{from{opacity:0;transform:translateY(10px)}}
+.pk:active,.pk.on{background:var(--s1)}
+.pk .pk-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--s1);color:var(--mut);flex:none}
+.pk.on .pk-ic{background:var(--s2)}
+.pk .pk-t{display:block;font-weight:600;line-height:1.3}
+.pk .pk-s{display:block;font-size:12.5px;color:var(--mut);margin-top:1px}
+.pk .pk-r{font-weight:700;font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pk .pk-ck{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px var(--s3);color:var(--acc-ink);transition:all .35s var(--spring)}
+.pk.on .pk-ck{background:var(--acc);box-shadow:none}
+.pk .pk-ck svg{width:13px;height:13px;stroke-width:3;opacity:0;transform:scale(.4);transition:all .35s var(--spring)}
+.pk.on .pk-ck svg{opacity:1;transform:none}
+.pk-empty{padding:30px 10px;text-align:center;color:var(--mut);font-size:14px}
 
 /* ── Обучение ── */
 .onb .sheet{padding:26px 0 calc(18px + env(safe-area-inset-bottom));overflow:hidden}
@@ -413,6 +447,8 @@ const ICONS = {
   help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
   activity: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
   arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  chevd: '<path d="m6 9 6 6 6-6"/>',
+  ban: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
   up: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   checks: '<path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/>',
 };
@@ -558,7 +594,7 @@ function applyTheme() {
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   try { tg.setHeaderColor(bg); tg.setBackgroundColor(bg); tg.setBottomBarColor && tg.setBottomBarColor(bg); } catch (e) {}
 }
-const PRESS = '.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.send,.quick button';
+const PRESS = '.pfield,.pk,.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.send,.quick button';
 let pressed = null;
 document.addEventListener('pointerdown', (e) => {
   const el = e.target.closest(PRESS);
@@ -1388,17 +1424,14 @@ V.aproduct = async (c) => {
     <div class="xs dim" style="margin:2px 0 0">Так товар выглядит в маркете</div>
     <div class="form-sec"><h3>Основное</h3>
       <div class="field"><label>Название <i>*</i></label><input id="f-title" value="${esc(p.title || '')}" oninput="livePreview()"></div>
-      <div class="grid2">
-        <div class="field"><label>Игра</label><select id="f-game" onchange="livePreview()">${opt('', 'Без игры', p.game_id)}${S.adminGames.map((g) => opt(g.id, g.title, p.game_id)).join('')}</select></div>
-        <div class="field"><label>Раздел</label><select id="f-section" onchange="livePreview()">${Object.entries(S.data.sections).map(([k, s]) => opt(k, s.title, p.section)).join('')}</select></div>
-      </div>
-      <div class="field"><label>Бейдж</label><select id="f-badge" onchange="livePreview()">${opt('', 'Без бейджа', p.badge)}${BADGES.map((b) => opt(b, b, p.badge)).join('')}${p.badge && !BADGES.includes(p.badge) ? opt(p.badge, p.badge, p.badge) : ''}</select>
-        <div class="hint">Хиты стоят первыми в категориях и попадают в «Сейчас берут».</div></div>
+      ${pickField('f-game', 'Игра', p.game_id ?? '', PICKS.game, livePreview)}
+      ${pickField('f-section', 'Раздел', p.section, PICKS.section, livePreview)}
+      ${pickField('f-badge', 'Бейдж', p.badge || '', () => { const c = PICKS.badge(); if (p.badge && !BADGES.includes(p.badge)) c.groups[0].items.push({ value: p.badge, label: p.badge, icon: icBox('tag') }); return c; }, livePreview)}
       <div class="field"><label>Описание</label><textarea id="f-desc" rows="5">${esc(p.description || '')}</textarea></div>
     </div>
     <div class="form-sec"><h3>Цена и выдача</h3>
-      <div class="field"><label>Как выдаётся</label><select id="f-kind" onchange="keepForm(this.value)">${Object.entries(KIND_TEXT).map(([k, v]) => opt(k, v[0], c.kind)).join('')}</select>
-        ${S.data.demoAuto ? '<div class="hint">В демо-режиме любой товар выдаётся мгновенно с тестовыми данными.</div>' : ''}</div>
+      ${pickField('f-kind', 'Как выдаётся', c.kind, PICKS.kind, (v) => keepForm(v))}
+      ${S.data.demoAuto ? '<div class="hint" style="font-size:12px;color:var(--dim);margin-top:6px">В демо-режиме любой товар выдаётся мгновенно с тестовыми данными.</div>' : ''}
       <div class="grid2">
         ${phys ? '' : `<div class="field"><label>Цена в звёздах <i>*</i></label><input id="f-price" type="number" min="1" inputmode="numeric" value="${esc(p.price ?? '')}" oninput="livePreview()"></div>`}
         <div class="field"><label>${phys ? 'Цена, $ <i>*</i>' : 'Цена в крипте, $'}</label><input id="f-usd" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${phys ? '' : 'Только звёзды'}" value="${esc(p.price_usd ?? '')}" oninput="livePreview()"></div>
@@ -1601,7 +1634,7 @@ V.agift = async (c) => {
       <div class="field" style="margin-top:0"><label>Кому <i>*</i></label>
         <div class="row"><input id="g-to" value="${esc(c.to)}" placeholder="@username или ID" autocapitalize="off" autocomplete="off" oninput="cur().to=this.value;cur().found=null;$('#g-who').innerHTML=''" onblur="findGiftUser()"><button class="btn sm" style="min-height:50px;background:var(--s2)" onclick="findGiftUser()">Найти</button></div>
         <div id="g-who">${c.found ? giftWho(c.found) : ''}</div></div>
-      <div class="field"><label>Товар <i>*</i></label><select id="g-product" onchange="cur().product=+this.value;cur().note='';refresh()">${list.map(opt).join('')}</select></div>
+      ${pickField('g-product', 'Товар <i>*</i>', c.product, PICKS.product, (v) => { cur().product = +v; cur().note = ''; refresh(); })}
       ${p && p.section !== 'accounts' ? `<div class="field"><label>Количество</label><div class="qty" style="background:var(--s2)"><button onclick="giftQty(-1)">${ic('minus', 's')}</button><span class="num">${c.qty}</span><button onclick="giftQty(1)">${ic('plus', 's')}</button></div></div>` : ''}
       ${p && p.ask ? `<div class="field"><label>${esc(p.ask)}</label><input id="g-note" value="${esc(c.note || '')}" oninput="cur().note=this.value" placeholder="Если нужно для выдачи"></div>` : ''}
       <div class="field"><label>Сообщение получателю</label><textarea id="g-comment" rows="3" placeholder="Например: спасибо, что вы с нами! Держите бонус." oninput="cur().comment=this.value">${esc(c.comment || '')}</textarea></div>
@@ -1628,6 +1661,99 @@ async function sendGift() {
     render(true, 'fwd');
   } catch (e) { hapticN('error'); toast(e.message, 'err'); btn.disabled = false; }
 }
+
+/* ═══════════════ Выбор из списка (вместо системного select) ═══════════════
+   cfg(): { title, search, groups: [{ title, items: [{ value, label, sub, icon, right }] }] } */
+const PICK = {};
+function pickField(id, label, value, cfg, onChange) {
+  PICK[id] = { cfg, onChange };
+  return `<div class="field"><label>${label}</label><input type="hidden" id="${id}" value="${esc(value ?? '')}">
+    <button type="button" class="pfield" id="${id}-btn" onclick="openPick('${id}')">${pickFace(id, value)}</button></div>`;
+}
+function pickItem(id, value) {
+  for (const g of PICK[id].cfg().groups) for (const it of g.items) if (String(it.value) === String(value ?? '')) return it;
+  return null;
+}
+function pickFace(id, value) {
+  const it = pickItem(id, value) || { label: 'Выбрать', icon: `<span class="pf-ic">${ic('chevd', 's')}</span>` };
+  return `${it.icon || ''}<span class="grow"><span class="pf-t">${esc(it.label)}</span>${it.sub ? `<span class="pf-s">${esc(it.sub)}</span>` : ''}</span>${ic('chevd', 's chev')}`;
+}
+let pickState = null;
+function openPick(id) {
+  const cfg = PICK[id].cfg();
+  const value = $('#' + id).value;
+  pickState = { id, q: '' };
+  const el = openSheet('pick', `<div class="pick-h"><h3>${esc(cfg.title)}</h3><button class="x" onclick="closeSheet()" aria-label="Закрыть">${ic('x', 's')}</button></div>
+    ${cfg.search ? `<div class="pick-s"><div class="search">${ic('search')}<input id="pick-q" placeholder="Поиск" oninput="pickState.q=this.value;$('#pick-list').innerHTML=pickList()" autocomplete="off"></div></div>` : ''}
+    <div class="pick-list" id="pick-list">${pickList(value)}</div>`);
+  if (!el) return;
+  hapticSel();
+  setTimeout(() => { const on = el.querySelector('.pk.on'); if (on) on.scrollIntoView({ block: 'center' }); }, 60);
+}
+function pickList(value) {
+  const { id, q } = pickState;
+  const cur = value ?? $('#' + id).value;
+  const qq = (q || '').trim().toLowerCase();
+  let n = 0;
+  const html = PICK[id].cfg().groups.map((g) => {
+    const items = g.items.filter((it) => !qq || (it.label + ' ' + (it.sub || '') + ' ' + (g.title || '')).toLowerCase().includes(qq));
+    if (!items.length) return '';
+    return (g.title ? `<div class="pk-g">${esc(g.title)}<span>${items.length}</span></div>` : '') + items.map((it) => `
+      <button class="pk ${String(it.value) === String(cur) ? 'on' : ''}" style="animation-delay:${Math.min(n++ * 18, 320)}ms" onclick="choosePick('${esc(String(it.value))}')">
+        ${it.icon || ''}<span class="grow"><span class="pk-t">${esc(it.label)}</span>${it.sub ? `<span class="pk-s">${esc(it.sub)}</span>` : ''}</span>
+        ${it.right ? `<span class="pk-r">${it.right}</span>` : ''}<span class="pk-ck">${ic('check')}</span></button>`).join('');
+  }).join('');
+  return html || '<div class="pk-empty">Ничего не нашли</div>';
+}
+function choosePick(value) {
+  const { id } = pickState;
+  document.querySelectorAll('#pick-list .pk').forEach((b) => b.classList.toggle('on', b.getAttribute('onclick') === `choosePick('${value}')`));
+  hapticSel();
+  $('#' + id).value = value;
+  setTimeout(() => {
+    closeSheet();
+    const btn = $('#' + id + '-btn');
+    if (btn) { btn.innerHTML = pickFace(id, value); btn.classList.remove('flash'); void btn.offsetWidth; btn.classList.add('flash'); }
+    if (PICK[id].onChange) PICK[id].onChange(value);
+  }, 160);
+}
+// готовые списки
+function initials(g) {
+  const s = (g.short || '').replace(/\s+/g, '');
+  if (s && s.length <= 4) return s;
+  const w = g.title.split(/[\s-]+/).filter(Boolean);
+  if (w.length > 1) return w.map((x) => (/^[A-Z0-9]{1,3}$/.test(x) ? x : x[0])).join('').slice(0, 4).toUpperCase();
+  return g.title.slice(0, 2).toUpperCase();
+}
+const gameIcon = (g) => `<span class="mini-gt" style="background:${g.color1};font-size:${initials(g).length > 3 ? 10 : 12}px">${esc(initials(g))}</span>`;
+const icBox = (name, cls) => `<span class="pf-ic pk-ic ${cls || ''}" ${cls ? `style="color:var(--r)"` : ''}>${ic(name, 's')}</span>`;
+const PICKS = {
+  game: () => ({ title: 'Игра', groups: [{ items: [{ value: '', label: 'Без игры', sub: 'Пополнения, девайсы и другое', icon: icBox('ban') },
+    ...S.adminGames.map((g) => ({ value: g.id, label: g.title, sub: nItems(S.adminProducts.filter((p) => p.game_id === g.id).length), icon: gameIcon(g) }))] }] }),
+  section: () => ({ title: 'Раздел', groups: [{ items: Object.entries(S.data.sections).map(([k, s]) => ({ value: k, label: s.title, icon: icBox(secIcon(k)) })) }] }),
+  badge: () => ({ title: 'Бейдж', groups: [{ items: [
+    { value: '', label: 'Без бейджа', sub: 'Обычный товар', icon: icBox('ban') },
+    { value: 'Хит', label: 'Хит', sub: 'Первым в категориях, золотой цвет', icon: icBox('star', 'r-legend') },
+    { value: 'Редкое', label: 'Редкое', sub: 'Фиолетовый цвет', icon: icBox('gem', 'r-epic') },
+    { value: 'Новинка', label: 'Новинка', sub: 'Синий цвет', icon: icBox('spark', 'r-rare') },
+    { value: 'Выгодно', label: 'Выгодно', sub: 'Синий цвет', icon: icBox('tag', 'r-rare') },
+  ] }] }),
+  kind: () => ({ title: 'Как выдаётся', groups: [{ items: Object.entries(KIND_TEXT).map(([k, v]) => ({ value: k, label: v[0], sub: v[1], icon: icBox({ digital_auto: 'zap', digital_manual: 'user', service: 'rocket', physical: 'truck' }[k]) })) }] }),
+  product: () => {
+    const groups = [];
+    for (const g of S.adminGames) {
+      const items = sortList(S.adminProducts.filter((p) => p.game_id === g.id));
+      if (items.length) groups.push({ title: g.title, items });
+    }
+    for (const [k, s] of Object.entries(S.data.sections)) {
+      const items = sortList(S.adminProducts.filter((p) => !p.game_id && p.section === k));
+      if (items.length) groups.push({ title: s.title, items });
+    }
+    return { title: 'Товар', search: true, groups: groups.map((g) => ({ title: g.title, items: g.items.map((p) => ({
+      value: p.id, label: p.title, sub: (S.data.sections[p.section] || {}).title + (isHit(p) ? ', хит' : '') + (p.active ? '' : ', скрыт'),
+      icon: `<span class="pk-ic gl r-${rarity(p)}" style="color:var(--r)">${ic(secIcon(p.section), 's')}</span>`, right: priceOf(p) })) })) };
+  },
+};
 
 /* Промо: промокоды и рассылка */
 A.promo = async () => {
