@@ -46,6 +46,7 @@ select{appearance:none;padding-right:38px;background-image:url("data:image/svg+x
 .pre{white-space:pre-wrap;word-break:break-word}
 .num{font-variant-numeric:tabular-nums}
 .xtr{color:var(--acc);font-size:.92em}
+.btn.acc .xtr,.msg.me .xtr{color:inherit}
 
 /* ── Мягкие нажатия ── */
 .tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard{position:relative;transition:transform .5s var(--spring),background-color .2s,color .2s,box-shadow .2s,opacity .2s}
@@ -168,7 +169,8 @@ svg.i.star{fill:var(--acc);stroke:none}
 .pay.on{box-shadow:inset 0 0 0 2px var(--acc)}
 .pay .pi{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--s2);color:var(--acc-tx)}
 .pay b{display:block;font-weight:650}
-.pay span{font-size:12.5px;color:var(--mut)}
+.pay .grow>span{display:block;font-size:12.5px;color:var(--mut)}
+.pay .grow{color:var(--tx)}
 .radio{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--s3);flex:none;transition:box-shadow .35s var(--spring)}
 .pay.on .radio{box-shadow:inset 0 0 0 7px var(--acc)}
 
@@ -453,6 +455,20 @@ const hapticN = (t = 'success') => { try { tg.HapticFeedback.notificationOccurre
 const hapticSel = () => { try { tg.HapticFeedback.selectionChanged(); } catch (e) {} };
 const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c; };
 const nItems = (n) => `${n} ${plural(n, 'товар', 'товара', 'товаров')}`;
+
+// промокод: процент или фиксированная сумма; null — к этой валюте не применим
+function promoTotal(sub, curr, p) {
+  if (!p) return sub;
+  if (p.kind === 'amount') {
+    const off = curr === 'XTR' ? p.stars : p.usd;
+    if (!off) return null;
+    return curr === 'XTR' ? Math.max(1, sub - off) : Math.max(0.1, r2(sub - off));
+  }
+  return curr === 'XTR' ? Math.max(1, sub - Math.floor(sub * p.percent / 100)) : Math.max(0.1, r2(sub * (100 - p.percent) / 100));
+}
+const promoLabel = (p) => (p.kind === 'amount'
+  ? [p.stars || p.amount_stars ? `−${p.stars || p.amount_stars}&nbsp;${STAR}` : '', p.usd || p.amount_usd ? `−${usd(p.usd || p.amount_usd)}` : ''].filter(Boolean).join(' или ')
+  : `−${p.percent}%`);
 
 const STATUS = {
   pending: 'Ждёт оплаты', paying: 'Проверяем оплату', processing: 'В работе', delivered: 'Выдан',
@@ -819,7 +835,7 @@ V.cart = () => {
             ${maxQty(i.p) > 1 ? `<div class="qty mini"><button onclick="qtyC(${i.idx},-1)" aria-label="Меньше">${ic('minus', 's')}</button><span class="num">${i.qty}</span><button onclick="qtyC(${i.idx},1)" aria-label="Больше">${ic('plus', 's')}</button></div>` : '<span class="xs mut">1 шт.</span>'}
             <b class="num">${money(r2(i.qty * priceIn(i.p, cur)), cur)}</b></div></div>
         <button class="copy x" onclick="delC(${i.idx})" aria-label="Убрать" style="width:32px;height:32px;background:transparent;color:var(--dim)">${ic('x', 's')}</button></div>`).join('')}
-      <button class="btn acc" style="margin-top:10px" onclick="go('checkout',{kind:'${kind}'})">Оформить на ${money(cartSum(lines, cur), cur)}</button>`;
+      <button class="btn acc" style="margin-top:10px" onclick="go('checkout',{kind:'${kind}'})"><span>Оформить на ${money(cartSum(lines, cur), cur)}</span></button>`;
   };
   const both = cartLines('digital').length && cartLines('physical').length;
   return `<div class="title">Корзина</div>
@@ -842,7 +858,9 @@ V.checkout = (c) => {
   else if (!c.method || (c.method === 'crypto' && !canCrypto)) c.method = 'stars';
   const curr = c.method === 'stars' ? 'XTR' : 'USD';
   const sub = cartSum(lines, curr);
-  const total = !S.promo ? sub : curr === 'XTR' ? Math.max(1, sub - Math.floor(sub * S.promo.percent / 100)) : Math.max(0.1, r2(sub * (100 - S.promo.percent) / 100));
+  const pt = promoTotal(sub, curr, S.promo);
+  c.promoOk = pt !== null;
+  const total = pt === null ? sub : pt;
   const disc = r2(sub - total);
   const d = S.delivery;
   const cryptoSub = `USDT, TON или BTC через CryptoBot${pay.cryptoTestnet ? ', тестовая сеть' : ''}`;
@@ -851,13 +869,14 @@ V.checkout = (c) => {
   return `<div class="title">Оформление</div>
     <div class="box">
       ${lines.map((i) => `<div class="sum"><span class="grow">${esc(i.p.title)}${i.qty > 1 ? ` <span class="mut">×${i.qty}</span>` : ''}</span><span class="num">${money(r2(i.qty * priceIn(i.p, curr)), curr)}</span></div>`).join('')}
-      ${disc ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(S.promo.code)}, −${S.promo.percent}%</span><span class="num">−${money(disc, curr)}</span></div>` : ''}
+      ${disc ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(S.promo.code)}</span><span class="num">−${money(disc, curr)}</span></div>` : ''}
       <div class="sum total"><span>К оплате</span><span class="num">${money(total, curr)}</span></div>
     </div>
     <div class="field"><label>Промокод</label>
       <div class="row">${S.promo
-        ? `<div class="grow kv">${ic('tag', 's')}<b>${esc(S.promo.code)}</b><span class="mut">−${S.promo.percent}%</span></div><button class="btn sm ghost" onclick="S.promo=null;refresh()">Убрать</button>`
-        : `<input id="promo" placeholder="Например, DEMO10" oninput="this.value=this.value.toUpperCase()"><button class="btn sm" style="min-height:50px" onclick="applyPromo()">Применить</button>`}</div></div>
+        ? `<div class="grow kv">${ic('tag', 's')}<b>${esc(S.promo.code)}</b><span class="mut">${promoLabel(S.promo)}</span></div><button class="btn sm ghost" onclick="S.promo=null;refresh()">Убрать</button>`
+        : `<input id="promo" placeholder="Например, DEMO10" oninput="this.value=this.value.toUpperCase()"><button class="btn sm" style="min-height:50px" onclick="applyPromo()">Применить</button>`}</div>
+      ${S.promo && !c.promoOk ? `<div class="hint" style="color:var(--warn);font-size:12.5px;margin-top:6px">Этот промокод действует только при оплате ${curr === 'XTR' ? 'криптой' : 'звёздами'}.</div>` : ''}</div>
     ${kind === 'physical' ? `
       <div class="sec"><h2>Доставка</h2></div>
       <div class="field" style="margin-top:6px"><label>Имя и фамилия <i>*</i></label><input id="d-name" value="${esc(d.name || '')}" autocomplete="name"></div>
@@ -868,7 +887,7 @@ V.checkout = (c) => {
     ${kind === 'physical'
       ? (canCrypto ? method('crypto', 'coins', 'Криптовалюта', cryptoSub) : `<div class="demo-note">${ic('alert', 's')}<span>Оплата девайсов пока не подключена.</span></div>`)
       : method('stars', 'star', 'Звёзды Telegram', 'Покупаются прямо в Telegram, оплата в одно касание') + (canCrypto ? method('crypto', 'coins', 'Криптовалюта', cryptoSub) : '')}
-    <div class="bar"><button class="btn acc" id="paybtn" onclick="payNow('${kind}')" ${!c.method ? 'disabled' : ''}>Оплатить ${money(total, curr)}</button></div>`;
+    <div class="bar"><button class="btn acc" id="paybtn" onclick="payNow('${kind}')" ${!c.method ? 'disabled' : ''}><span>Оплатить ${money(total, curr)}</span></button></div>`;
 };
 function readDelivery() {
   ['name', 'phone', 'address', 'comment'].forEach((k) => { const el = $('#d-' + k); if (el) S.delivery[k] = el.value.trim(); });
@@ -878,13 +897,13 @@ async function applyPromo() {
   const code = ($('#promo').value || '').trim();
   if (!code) return;
   if (cur().kind === 'physical') readDelivery();
-  try { S.promo = await api('promo_check', { code }); hapticN(); toast(`Скидка ${S.promo.percent}% применена`, 'ok'); refresh(); }
+  try { S.promo = await api('promo_check', { code }); hapticN(); toast('Промокод применён', 'ok'); refresh(); }
   catch (e) { hapticN('error'); toast(e.message, 'err'); }
 }
 async function payNow(kind) {
   const c = cur(), btn = $('#paybtn');
   const lines = cartLines(kind);
-  const body = { kind, method: c.method, items: lines.map((i) => ({ id: i.id, qty: i.qty, note: i.note })), promo: S.promo ? S.promo.code : null };
+  const body = { kind, method: c.method, items: lines.map((i) => ({ id: i.id, qty: i.qty, note: i.note })), promo: S.promo && c.promoOk ? S.promo.code : null };
   if (kind === 'physical') { readDelivery(); body.delivery = S.delivery; }
   btn.disabled = true; btn.textContent = 'Создаём счёт…';
   try {
@@ -1024,7 +1043,7 @@ function orderRow(o, admin) {
   return `<button class="ocard" onclick="go('${admin ? 'aorder' : 'order'}',{id:${o.id}})">
     <div class="row between"><b>Заказ #${o.id}</b><span class="st s-${o.status}">${STATUS[o.status] || o.status}</span></div>
     <div class="oi">${esc(titles)}</div>
-    <div class="row between xs mut"><span>${admin ? esc(o.user_name) + ', ' : ''}${dateStr(o.created_at)}</span><b class="num" style="color:var(--tx);font-size:15px">${money(o.total, o.currency)}</b></div></button>`;
+    <div class="row between xs mut"><span>${admin ? esc(o.user_name) + ', ' : ''}${dateStr(o.created_at)}</span><b class="num" style="color:var(--tx);font-size:15px">${o.method === 'gift' ? 'Подарок' : money(o.total, o.currency)}</b></div></button>`;
 }
 
 async function refreshOrderData(c, call, body) {
@@ -1065,7 +1084,7 @@ function itemsBlock(o) {
   return `<div class="box">${o.items.map((i) => `<div class="sum"><span class="grow">${esc(i.title)}${i.qty > 1 ? ` <span class="mut">×${i.qty}</span>` : ''}${i.note ? `<div class="xs mut">${esc(i.ask || 'Данные')}: ${esc(i.note)}</div>` : ''}</span><span class="num">${money(r2(i.price * i.qty), o.currency)}</span></div>`).join('')}
     ${o.discount ? `<div class="sum" style="color:var(--ok)"><span>Промокод ${esc(o.promo)}</span><span class="num">−${money(o.discount, o.currency)}</span></div>` : ''}
     <div class="sum total"><span>Итого</span><span class="num">${money(o.total, o.currency)}</span></div>
-    <div class="xs mut" style="margin-top:8px">${{ stars: 'Звёзды Telegram', crypto: 'Криптовалюта через CryptoBot' }[o.method] || ''}, ${dateStr(o.created_at)}</div></div>`;
+    <div class="xs mut" style="margin-top:8px">${{ stars: 'Звёзды Telegram', crypto: 'Криптовалюта через CryptoBot', gift: 'Подарок от магазина' }[o.method] || ''}, ${dateStr(o.created_at)}</div></div>`;
 }
 // ── Чат по заказу ──
 const QUICK = {
@@ -1175,7 +1194,7 @@ V.order = (c) => {
       <textarea id="dispute-text" placeholder="Например: ключ не активируется, пишет «уже использован»" style="background:var(--s2)"></textarea>
       <div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="cur().disputeOpen=false;refresh()">Назад</button><button class="btn bad" onclick="sendDispute()">Открыть спор</button></div></div>`;
   } else if (o.status === 'pending') {
-    actions = `<button class="btn acc" onclick="payAgain(${o.id})">Оплатить ${money(o.total, o.currency)}</button>
+    actions = `<button class="btn acc" onclick="payAgain(${o.id})"><span>Оплатить ${money(o.total, o.currency)}</span></button>
       ${o.method === 'crypto' ? `<button class="btn ghost" style="margin-top:8px" onclick="checkCrypto()">${ic('refresh', 's')} Я оплатил, проверить</button>` : ''}
       <button class="btn ghost" style="margin-top:8px;color:var(--mut)" onclick="orderAct('order_cancel','Отменить заказ?')">Отменить заказ</button>`;
   } else if (o.status === 'delivered') {
@@ -1287,7 +1306,7 @@ V.aorder = (c) => {
   }
   const btns = [];
   if (['processing', 'delivered', 'dispute'].includes(o.status)) btns.push(`<button class="btn ok sm" onclick="adminAct('complete','Завершить заказ без подтверждения покупателя?')">${ic('check', 's')} Завершить</button>`);
-  if (['processing', 'delivered', 'completed', 'dispute'].includes(o.status)) btns.push(`<button class="btn bad sm" onclick="adminAct('refund','${o.method === 'stars' ? 'Вернуть звёзды покупателю? Отменить это нельзя.' : 'Отметить возврат? Крипту нужно вернуть вручную через CryptoBot.'}')">${ic('undo', 's')} Вернуть деньги</button>`);
+  if (o.method !== 'gift' && ['processing', 'delivered', 'completed', 'dispute'].includes(o.status)) btns.push(`<button class="btn bad sm" onclick="adminAct('refund','${o.method === 'stars' ? 'Вернуть звёзды покупателю? Отменить это нельзя.' : 'Отметить возврат? Крипту нужно вернуть вручную через CryptoBot.'}')">${ic('undo', 's')} Вернуть деньги</button>`);
   if (o.status === 'pending') btns.push(`<button class="btn ghost sm" onclick="adminAct('cancel','Отменить неоплаченный заказ?')">Отменить</button>`);
   return `<div class="row between" style="margin-top:4px"><div class="title" style="margin:0">Заказ #${o.id}</div><span class="st s-${o.status}">${STATUS[o.status]}</span></div>
     <button class="li" style="margin-top:12px" onclick="go('auser',{id:${o.user_id}})">${avatar(o.user_id, o.user_name)}<div class="grow"><b>${esc(o.user_name)}</b><div class="xs mut">${o.username ? '@' + esc(o.username) + ', ' : ''}${dateStr(o.created_at)}</div></div>${ic('arrow', 's')}</button>
@@ -1311,7 +1330,7 @@ A.products = async () => {
   const { products, games } = await api('admin_products');
   S.adminGames = games; S.adminProducts = products;
   const chip = (k, t, n) => `<button class="pill ${S.prodFilter === k ? 'on' : ''}" data-k="${k}" onclick="setProdFilter('${k}')">${t}<em>${n}</em></button>`;
-  return `<button class="btn acc" style="margin-top:12px" onclick="go('aproduct',{id:0})">${ic('plus')} Новый товар</button>
+  return `<div class="btns" style="margin-top:12px"><button class="btn acc" onclick="go('aproduct',{id:0})">${ic('plus')} Новый товар</button><button class="btn" onclick="go('agift',{})">${ic('bag')} Выдать товар</button></div>
     <div class="search" style="margin:12px 0 10px">${ic('search')}<input placeholder="Поиск по названию" value="${esc(S.prodQ)}" oninput="S.prodQ=this.value;$('#plist').innerHTML=prodList()"></div>
     <div class="pills" id="pchips">${chip('all', 'Все', products.length)}${chip('on', 'В продаже', products.filter((p) => p.active).length)}${chip('off', 'Скрытые', products.filter((p) => !p.active).length)}</div>
     <div id="plist">${prodList()}</div>`;
@@ -1390,7 +1409,7 @@ V.aproduct = async (c) => {
     <label class="form-sec row" style="cursor:pointer"><span class="grow"><b class="sm" style="display:block">Показывать в маркете</b><span class="xs mut">Скрытый товар видите только вы</span></span>
       <input type="checkbox" id="f-active" ${p.active ? 'checked' : ''} style="display:none" onchange="this.nextElementSibling.classList.toggle('on',this.checked);hapticSel()"><span class="switch ${p.active ? 'on' : ''}"></span></label>
     ${stock}
-    ${c.id ? `<button class="btn sm ghost" style="margin:14px auto 0" onclick="shareProduct(${c.id})">${ic('link', 's')} Ссылка на товар для поста</button>` : ''}
+    ${c.id ? `<div class="btns" style="margin-top:14px"><button class="btn sm ghost" onclick="go('agift',{product:${c.id}})">${ic('bag', 's')} Выдать пользователю</button><button class="btn sm ghost" onclick="shareProduct(${c.id})">${ic('link', 's')} Ссылка для поста</button></div>` : ''}
     <div class="bar"><button class="btn acc" onclick="saveProduct(${c.id || 0})">${ic('check')} ${c.id ? 'Сохранить' : 'Создать товар'}</button></div>`;
 };
 function previewOf(c, d) {
@@ -1478,7 +1497,9 @@ function evText(e) {
     admin_product: ['shield', `${d.created ? 'Создал' : 'Изменил'} товар ${t(d.title)}`, 'adm'],
     admin_toggle: ['shield', `${d.active ? 'Вернул в продажу' : 'Скрыл'} товар ${t(d.title)}`, 'adm'],
     admin_stock: ['shield', `Добавил ${d.added} ключей на склад`, 'adm'],
-    admin_promo: ['shield', `Создал промокод ${esc(d.code)} на ${d.percent}%`, 'adm'],
+    admin_promo: ['shield', `Создал промокод ${esc(d.code)} ${d.kind === 'amount' ? promoLabel({ kind: 'amount', stars: d.stars, usd: d.usd }) : `на ${d.percent}%`}`, 'adm'],
+    admin_gift: ['shield', `Выдал «${esc(d.title)}»${d.qty > 1 ? ` ×${d.qty}` : ''} пользователю ${esc(d.name)}`, 'adm'],
+    gift: ['spark', `Получил подарок от магазина: ${t(d.items)}`, 'good'],
     admin_broadcast: ['shield', `Сделал рассылку на ${d.users} пользователей`, 'adm'],
     admin_grant: ['shield', `Назначил администратором ${esc(d.name)}`, 'adm'],
     admin_revoke: ['shield', `Снял права администратора с ${esc(d.name)}`, 'adm'],
@@ -1554,6 +1575,7 @@ V.auser = async (c) => {
     <div class="sec"><h2>Права</h2></div>
     <div class="form-sec row" style="margin-top:0"><span class="grow"><b class="sm" style="display:block">Администратор</b>${roleRow}</span>
       <button class="switch ${r.role ? 'on' : ''}" ${canToggle ? '' : 'disabled'} onclick="setAdmin(${u.id}, ${!r.role})" aria-label="Администратор"></button></div>
+    <button class="btn" style="margin-top:12px" onclick="go('agift',{to:'${u.username ? '@' + esc(u.username) : u.id}'})">${ic('bag', 's')} Выдать товар</button>
     ${r.orders.length ? `<div class="sec"><h2>Заказы</h2><span>${r.orders.length}</span></div><div>${r.orders.slice(0, 10).map((o) => orderRow(o, true)).join('')}</div>` : ''}
     <div class="sec"><h2>Действия</h2><span>${r.eventsTotal > r.events.length ? `последние ${r.events.length}` : ''}</span></div>
     ${r.events.length ? timeline(r.events) : '<p class="sm mut">Пока ничего.</p>'}`;
@@ -1565,16 +1587,57 @@ async function setAdmin(id, on) {
   catch (e) { hapticN('error'); toast(e.message, 'err'); }
 }
 
+/* Выдача товара пользователю по @username или ID */
+V.agift = async (c) => {
+  if (!S.adminProducts) { const r = await api('admin_products'); S.adminGames = r.games; S.adminProducts = r.products; }
+  c.to = c.to || ''; c.qty = c.qty || 1;
+  const list = [...S.adminProducts].sort((a, b) => (where(a) + a.title).localeCompare(where(b) + b.title));
+  if (!c.product && list.length) c.product = list[0].id;
+  const p = S.adminProducts.find((x) => x.id === +c.product);
+  const opt = (x) => `<option value="${x.id}" ${x.id === +c.product ? 'selected' : ''}>${esc(where(x))}: ${esc(x.title)}</option>`;
+  return `<div class="title">Выдать товар</div>
+    <p class="lead" style="margin-top:-10px">Пользователь получит товар бесплатно, как будто купил его: в маркете появится заказ, а бот пришлёт данные.</p>
+    <div class="form-sec">
+      <div class="field" style="margin-top:0"><label>Кому <i>*</i></label>
+        <div class="row"><input id="g-to" value="${esc(c.to)}" placeholder="@username или ID" autocapitalize="off" autocomplete="off" oninput="cur().to=this.value;cur().found=null;$('#g-who').innerHTML=''" onblur="findGiftUser()"><button class="btn sm" style="min-height:50px;background:var(--s2)" onclick="findGiftUser()">Найти</button></div>
+        <div id="g-who">${c.found ? giftWho(c.found) : ''}</div></div>
+      <div class="field"><label>Товар <i>*</i></label><select id="g-product" onchange="cur().product=+this.value;cur().note='';refresh()">${list.map(opt).join('')}</select></div>
+      ${p && p.section !== 'accounts' ? `<div class="field"><label>Количество</label><div class="qty" style="background:var(--s2)"><button onclick="giftQty(-1)">${ic('minus', 's')}</button><span class="num">${c.qty}</span><button onclick="giftQty(1)">${ic('plus', 's')}</button></div></div>` : ''}
+      ${p && p.ask ? `<div class="field"><label>${esc(p.ask)}</label><input id="g-note" value="${esc(c.note || '')}" oninput="cur().note=this.value" placeholder="Если нужно для выдачи"></div>` : ''}
+      <div class="field"><label>Сообщение получателю</label><textarea id="g-comment" rows="3" placeholder="Например: спасибо, что вы с нами! Держите бонус." oninput="cur().comment=this.value">${esc(c.comment || '')}</textarea></div>
+    </div>
+    <div class="bar"><button class="btn acc" id="g-btn" onclick="sendGift()">${ic('bag')} Выдать</button></div>`;
+};
+const giftWho = (u) => `<div class="li" style="padding:10px 0 0">${avatar(u.id, u.first_name || u.username, 34)}<span class="grow"><b style="font-weight:650">${esc(u.first_name || u.username)}</b><span class="xs mut" style="display:block">${u.username ? '@' + esc(u.username) + ', ' : ''}ID ${u.id}</span></span>${ic('check', 's')}</div>`;
+async function findGiftUser() {
+  const c = cur(), q = (c.to || '').trim();
+  if (!q || c.found) return;
+  try { const r = await api('admin_user_find', { to: q }); c.found = r.user; $('#g-who').innerHTML = giftWho(r.user); hapticSel(); }
+  catch (e) { $('#g-who').innerHTML = `<div class="xs" style="color:var(--bad);margin-top:8px">${esc(e.message)}</div>`; }
+}
+function giftQty(d) { const c = cur(); c.qty = Math.max(1, Math.min(10, (c.qty || 1) + d)); hapticSel(); refresh(); }
+async function sendGift() {
+  const c = cur(), p = S.adminProducts.find((x) => x.id === +c.product);
+  if (!(c.to || '').trim()) return toast('Укажите, кому выдать товар', 'err');
+  if (!(await ask(`Выдать «${p.title}»${c.qty > 1 ? ` ×${c.qty}` : ''} пользователю ${c.found ? (c.found.first_name || '@' + c.found.username) : c.to}?`))) return;
+  const btn = $('#g-btn'); btn.disabled = true;
+  try {
+    const r = await api('admin_gift', { to: c.to, product_id: c.product, qty: c.qty, note: c.note, comment: c.comment });
+    hapticN(); toast(`Выдано: ${r.user.first_name || '@' + r.user.username}`, 'ok');
+    S.stack[S.stack.length - 1] = { v: 'aorder', id: r.order_id };
+    render(true, 'fwd');
+  } catch (e) { hapticN('error'); toast(e.message, 'err'); btn.disabled = false; }
+}
+
 /* Промо: промокоды и рассылка */
 A.promo = async () => {
   const { promos } = await api('admin_promos');
   return `<div class="sec" style="margin-top:14px"><h2>Промокоды</h2><span>${promos.length}</span></div>
-    ${promos.length ? promos.map((p) => `<div class="li"><span class="gl r-legend">${ic('tag')}</span><div class="grow"><b>${esc(p.code)}</b> <span class="mut">−${p.percent}%</span><div class="xs mut">${p.uses_left === null ? 'без ограничений' : `осталось ${p.uses_left} ${plural(p.uses_left, 'применение', 'применения', 'применений')}`}</div></div><button class="copy" onclick="copy('${esc(p.code)}')" aria-label="Скопировать">${ic('copy', 's')}</button><button class="copy" onclick="delPromo('${esc(p.code)}')" aria-label="Удалить">${ic('trash', 's')}</button></div>`).join('') : '<p class="sm mut">Промокодов нет.</p>'}
+    ${promos.length ? promos.map((p) => `<div class="li"><span class="gl r-legend">${ic('tag')}</span><div class="grow"><b>${esc(p.code)}</b> <span class="mut">${promoLabel(p)}</span><div class="xs mut">${p.uses_left === null ? 'без ограничений' : `осталось ${p.uses_left} ${plural(p.uses_left, 'применение', 'применения', 'применений')}`}</div></div><button class="copy" onclick="copy('${esc(p.code)}')" aria-label="Скопировать">${ic('copy', 's')}</button><button class="copy" onclick="delPromo('${esc(p.code)}')" aria-label="Удалить">${ic('trash', 's')}</button></div>`).join('') : '<p class="sm mut">Промокодов нет.</p>'}
     <div class="form-sec"><h3>Новый промокод</h3>
-      <div class="grid2">
-        <div class="field"><label>Код</label><input id="pr-code" placeholder="SALE15" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="field"><label>Скидка, %</label><input id="pr-pct" type="number" min="1" max="90" inputmode="numeric" placeholder="15"></div>
-      </div>
+      <div class="field"><label>Код</label><input id="pr-code" placeholder="SALE15" oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="field"><label>Тип скидки</label><div class="seg"><button class="${S.promoKind !== 'amount' ? 'on' : ''}" onclick="setPromoKind('percent')">Процент</button><button class="${S.promoKind === 'amount' ? 'on' : ''}" onclick="setPromoKind('amount')">Сумма</button></div></div>
+      <div id="pr-kind">${promoKindFields()}</div>
       <div class="field"><label>Сколько раз можно применить</label><input id="pr-uses" type="number" min="0" inputmode="numeric" placeholder="Без ограничений"></div>
       <button class="btn acc" style="margin-top:14px" onclick="savePromo()">${ic('plus', 's')} Создать промокод</button></div>
     <div class="sec"><h2>Рассылка</h2></div>
@@ -1585,8 +1648,22 @@ A.promo = async () => {
       <div class="msg them pre" id="mail-prev" style="max-width:100%;animation:none">Здесь появится текст сообщения</div>
       <button class="btn acc" style="margin-top:14px" onclick="sendMail()">${ic('send', 's')} Отправить всем</button></div>`;
 };
+function promoKindFields() {
+  return S.promoKind === 'amount'
+    ? `<div class="grid2"><div class="field"><label>Скидка в звёздах</label><input id="pr-stars" type="number" min="1" inputmode="numeric" placeholder="2"></div>
+       <div class="field"><label>Скидка в $</label><input id="pr-usd" type="number" min="0" step="0.01" inputmode="decimal" placeholder="5"></div></div>
+       <div class="hint" style="font-size:12px;color:var(--dim);margin-top:6px">Можно заполнить одно поле — тогда промокод сработает только для этой валюты. Цена не опустится ниже 1 ★ или $0.10.</div>`
+    : `<div class="field"><label>Скидка, %</label><input id="pr-pct" type="number" min="1" max="90" inputmode="numeric" placeholder="15"></div>`;
+}
+function setPromoKind(k) {
+  S.promoKind = k; hapticSel();
+  document.querySelectorAll('.form-sec .seg button').forEach((b, i) => b.classList.toggle('on', (i === 1) === (k === 'amount')));
+  $('#pr-kind').innerHTML = promoKindFields();
+}
 async function savePromo() {
-  try { await api('admin_promo_save', { code: $('#pr-code').value, percent: $('#pr-pct').value, uses_left: $('#pr-uses').value }); hapticN(); toast('Промокод создан', 'ok'); render(false); }
+  const v = (id) => ($('#' + id) || {}).value || '';
+  const body = { code: v('pr-code'), kind: S.promoKind === 'amount' ? 'amount' : 'percent', percent: v('pr-pct'), amount_stars: v('pr-stars'), amount_usd: v('pr-usd'), uses_left: v('pr-uses') };
+  try { await api('admin_promo_save', body); hapticN(); toast('Промокод создан', 'ok'); render(false); }
   catch (e) { toast(e.message, 'err'); }
 }
 async function delPromo(code) {
