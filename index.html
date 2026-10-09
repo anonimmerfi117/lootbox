@@ -727,7 +727,7 @@ function renderTabbar(bump) {
   if (!S.data) return;
   const root = S.stack[0].v;
   const n = S.cart.reduce((a, i) => a + i.qty, 0);
-  const tabs = [['home', 'grid', 'Маркет'], ['cart', 'bag', 'Корзина', n], ['orders', 'box', 'Заказы'], ['profile', 'user', 'Профиль', S.counts.mySupport]];
+  const tabs = [['profile', 'user', 'Профиль', S.counts.mySupport], ['home', 'grid', 'Маркет'], ['cart', 'bag', 'Корзина', n], ['orders', 'box', 'Заказы']];
   if (S.data.admin) tabs.push(['admin', 'shield', 'Управление', (S.counts.attention || 0) + (S.counts.support || 0)]);
   $('#tabbar').innerHTML = tabs.map(([v, i, t, b]) =>
     `<button class="tab ${root === v ? 'on' : ''}" onclick="tab('${v}')">${ic(i)}<span>${t}</span>${b ? `<span class="dot ${bump && v === 'cart' && n > lastCartN ? 'pop' : ''}">${b}</span>` : ''}</button>`).join('');
