@@ -1831,13 +1831,20 @@ async function start() {
     return;
   }
   if (S.data.admin) api('admin_orders', { filter: 'active' }).then((r) => { S.counts.attention = r.orders.length; renderTabbar(); }).catch(() => {});
-  const h = (location.hash || '').slice(1);
-  let m;
-  if ((m = /^p[=_](\d+)$/.exec(h) || /^p_(\d+)$/.exec(sp)) && P(m[1])) S.stack = [{ v: 'home' }, { v: 'product', id: +m[1] }];
-  else if ((m = /^o[=_](\d+)$/.exec(h) || /^o_(\d+)$/.exec(sp))) S.stack = [{ v: 'orders' }, { v: 'order', id: +m[1] }];
-  else if ((m = /^ao=(\d+)$/.exec(h)) && S.data.admin) S.stack = [{ v: 'admin' }, { v: 'aorder', id: +m[1] }];
-  else if (h === 'orders') S.stack = [{ v: 'orders' }];
-  else if (h === 'admin' && S.data.admin) S.stack = [{ v: 'admin' }];
+  // Куда открыть: из кнопки бота (?o=5, ?ao=5, ?p=12, ?orders, ?admin), из ссылки t.me (start_param) или старого #хэша
+  const qs = new URLSearchParams(location.search);
+  const hs = new URLSearchParams((location.hash || '').slice(1).replace(/^([a-z]+)=(\d+)$/, '$1=$2'));
+  const arg = (k) => qs.get(k) || hs.get(k) || '';
+  const flag = (k) => qs.has(k) || hs.has(k);
+  const spm = /^([a-z]+)_(\d+)$/.exec(sp) || [];
+  const pid = +(arg('p') || (spm[1] === 'p' ? spm[2] : 0));
+  const oid = +(arg('o') || (spm[1] === 'o' ? spm[2] : 0));
+  const aoid = +arg('ao');
+  if (oid) S.stack = [{ v: 'orders' }, { v: 'order', id: oid }];
+  else if (aoid && S.data.admin) S.stack = [{ v: 'admin' }, { v: 'aorder', id: aoid }];
+  else if (pid && P(pid)) S.stack = [{ v: 'home' }, { v: 'product', id: pid }];
+  else if (flag('orders')) S.stack = [{ v: 'orders' }];
+  else if (flag('admin') && S.data.admin) S.stack = [{ v: 'admin' }];
   await render(true, 'tab');
   // обучение — один раз, при первом открытии главной
   if (onb !== '1' && S.stack.length === 1 && S.stack[0].v === 'home') setTimeout(openOnboarding, 450);
