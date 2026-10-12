@@ -51,7 +51,7 @@ select{appearance:none;padding-right:38px;background-image:url("data:image/svg+x
 .btn.acc .xtr,.msg.me .xtr{color:inherit}
 
 /* ── Мягкие нажатия ── */
-.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard{position:relative;transition:transform .5s var(--spring),background-color .2s,color .2s,box-shadow .2s,opacity .2s}
+.gch,.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard{position:relative;transition:transform .5s var(--spring),background-color .2s,color .2s,box-shadow .2s,opacity .2s}
 .pressed{transform:scale(.965)!important;transition-duration:.14s!important}
 .btn,.it,.pay,.ocard,.pill{overflow:hidden;isolation:isolate}
 .rpl{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.13;transform:scale(0);animation:rpl .65s var(--ease) forwards;z-index:-1}
@@ -292,7 +292,7 @@ svg.i.star{fill:var(--acc);stroke:none}
 .loader{display:grid;place-items:center;padding:96px 0}
 .loader i{width:30px;height:30px;border-radius:50%;border:3px solid var(--s2);border-top-color:var(--acc);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-18px) scale(.96);opacity:0;z-index:80;max-width:calc(100% - 32px);display:flex;gap:8px;align-items:center;padding:12px 16px;border-radius:16px;background:var(--tx);color:var(--bg);font-size:14px;font-weight:600;box-shadow:0 14px 34px var(--shade);transition:all .45s var(--spring)}
+.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-18px) scale(.96);opacity:0;z-index:80;width:max-content;max-width:min(calc(100% - 32px),420px);display:flex;gap:8px;align-items:center;padding:12px 16px;border-radius:16px;background:var(--tx);color:var(--bg);font-size:14px;font-weight:600;box-shadow:0 14px 34px var(--shade);transition:all .45s var(--spring)}
 .toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
 .toast.ok svg{color:var(--ok)} .toast.err svg{color:var(--bad)}
 .how .li{padding:14px 0}
@@ -430,8 +430,45 @@ svg.i.star{fill:var(--acc);stroke:none}
   .stamp{opacity:.95!important;transform:rotate(-12deg)!important}
 }
 
+/* ── Каналы в админке ── */
+.chn{display:flex;align-items:center;gap:12px;padding:13px 0}
+.chn+.chn{border-top:1px solid var(--line)}
+.chn b{display:block;font-weight:650;line-height:1.25}
+.chn .grow>span{display:block;font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chn-st{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:12px;font-weight:650;color:var(--ok)}
+.chn.is-bad .chn-st{color:var(--bad)}
+.sub-sum{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;text-align:left}
+.sub-sum b{display:block;font-weight:650}
+.sub-sum .grow>span{font-size:12.5px;color:var(--mut)}
+.sub-sum svg.s{color:var(--dim)}
+.bad-t{font-style:normal;color:var(--bad);font-weight:650}
+
+/* ── Экран обязательной подписки ── */
+.gate{min-height:calc(100vh - 40px);min-height:calc(100dvh - 40px);display:flex;flex-direction:column;justify-content:center;padding:28px 2px 24px;text-align:center}
+.gate-ic{position:relative;width:88px;height:88px;margin:0 auto 22px;border-radius:28px;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);transform:rotate(-6deg)}
+.gate-ic svg.i{width:42px;height:42px;stroke-width:1.8}
+.gate-ic:after{content:"";position:absolute;inset:-9px;border-radius:34px;border:2px solid var(--acc);opacity:0}
+.gate h1{font-size:27px;line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}
+.gate p{color:var(--mut);font-size:15px;margin:0 auto;max-width:340px}
+.gate-list{margin:26px 0 14px;text-align:left}
+.gch{display:flex;align-items:center;gap:13px;width:100%;padding:12px 12px 12px 12px;border-radius:20px;background:var(--s1);text-align:left}
+.gch+.gch{margin-top:8px}
+.gch b{display:block;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gch .grow>span{display:block;font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gch-go{flex:none;padding:8px 14px;border-radius:999px;background:var(--acc);color:var(--acc-ink);font-size:13px;font-weight:700;transition:background-color .3s,color .3s}
+.gch.went .gch-go{background:var(--s2);color:var(--tx2)}
+.gate .btn{margin-top:4px}
+.gate.enter .gate-ic{animation:crate .7s var(--spring) both}
+.gate.enter .gate-ic:after{animation:ring 1.2s .3s ease-out both}
+.gate.enter h1,.gate.enter p,.gate.enter .btn{animation:pgIn .5s var(--ease) both;--dy:10px}
+.gate.enter p{animation-delay:.05s} .gate.enter .btn{animation-delay:.3s}
+.gate.enter .gch{animation:pgIn .5s var(--ease) both;--dy:12px}
+.shake{animation:shake .45s var(--ease)}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+.spin{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+
 /* ── Светлая тема: белые карточки с мягкой тенью вместо серого на сером ── */
-[data-theme=light] :is(.box,.kv,.chatbox,.kpi,.form-sec,.stats4,.fav,.menu,.help-card,.qty,.ic-btn,.chip,.pill:not(.on),.empty .ic,.tl .ti,.onb-art,.pk-ic){box-shadow:var(--sh)}
+[data-theme=light] :is(.gch,.box,.kv,.chatbox,.kpi,.form-sec,.stats4,.fav,.menu,.help-card,.qty,.ic-btn,.chip,.pill:not(.on),.empty .ic,.tl .ti,.onb-art,.pk-ic){box-shadow:var(--sh)}
 [data-theme=light] .btn:not(.acc):not(.ok):not(.bad):not(.ghost){box-shadow:var(--sh)}
 [data-theme=light] .search input{box-shadow:var(--sh);border-color:transparent}
 [data-theme=light] .search input:focus{border-color:var(--acc)}
@@ -606,6 +643,13 @@ async function api(name, body, opts) {
   }).catch(() => null);
   if (!r) throw new Error('Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.');
   const d = await r.json().catch(() => ({ error: 'Сервер ответил с ошибкой' }));
+  if (d && d.sub) {
+    // обязательная подписка: сервер не пускает, пока нет подписки на каналы
+    const err = new Error(d.error || 'Подпишитесь на каналы');
+    err.sub = d.sub;
+    if (S.data) showGate(d.sub.channels);
+    throw err;
+  }
   if (!r.ok || d.error) throw new Error(d.error || 'Ошибка');
   return d;
 }
@@ -674,7 +718,7 @@ function setTheme(p) {
   setTimeout(() => document.documentElement.classList.remove('theme-anim'), 500);
   document.querySelectorAll('#theme-seg button').forEach((b) => b.classList.toggle('on', b.dataset.t === p));
 }
-const PRESS = '.pfield,.qa-q,.pk,.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.send,.quick button';
+const PRESS = '.gch,.pfield,.qa-q,.pk,.tap,.btn,.pill,.seg button,.tab,.game,.qty button,.ic-btn,.switch,.pay,.it,.ocard,.copy,.x,.kpi,.li[onclick],.rate button,.send,.quick button';
 let pressed = null;
 document.addEventListener('pointerdown', (e) => {
   const el = e.target.closest(PRESS);
@@ -735,11 +779,11 @@ function tab(v) {
   if (S.stack.length === 1 && S.stack[0].v === v) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
   hapticSel(); S.stack = [{ v }]; track('tab', { name: v }); render(true, 'tab');
 }
-function back() { if ($('.sheet-bg')) return closeSheet(); if (S.stack.length > 1) { S.stack.pop(); render(true, 'back'); } }
+function back() { if (S.gate) return; if ($('.sheet-bg')) return closeSheet(); if (S.stack.length > 1) { S.stack.pop(); render(true, 'back'); } }
 const cur = () => S.stack[S.stack.length - 1];
 
 async function render(scroll, anim) {
-  if (!tg || !S.data) return;
+  if (!tg || !S.data || S.gate) return;
   const c = cur();
   try { S.stack.length > 1 ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {}
   renderTabbar();
@@ -748,13 +792,16 @@ async function render(scroll, anim) {
   let html;
   if (out && typeof out.then === 'function') {
     if (scroll) $('#app').innerHTML = loader();
-    try { html = await out; } catch (e) { html = errorBox(e.message); }
-    if (token !== renderToken) return;
+    try { html = await out; } catch (e) { if (e.sub) return; html = errorBox(e.message); }
+    if (token !== renderToken || S.gate) return;
   } else html = out;
   const y = window.scrollY;
   $('#app').innerHTML = `<div class="${anim ? 'pg a-' + anim : ''}">${html}</div>`;
   window.scrollTo(0, scroll ? 0 : y);
   const chat = $('.chat'); if (chat) chat.scrollTop = chat.scrollHeight;
+  // активная вкладка в горизонтальной ленте — всегда на виду
+  const ap = $('.pills .pill.on');
+  if (ap) { const bar = ap.parentElement; if (ap.offsetLeft + ap.offsetWidth > bar.scrollLeft + bar.clientWidth || ap.offsetLeft < bar.scrollLeft) bar.scrollLeft = ap.offsetLeft - 18; }
 }
 const refresh = () => render(false);
 
@@ -1401,7 +1448,7 @@ async function sendMsg() {
 // новые сообщения подтягиваются сами, пока открыт заказ
 setInterval(async () => {
   const c = cur();
-  if (!c || !['order', 'aorder', 'support', 'asupport'].includes(c.v) || !c.data || document.visibilityState !== 'visible' || $('.sheet-bg')) return;
+  if (S.gate || !c || !['order', 'aorder', 'support', 'asupport'].includes(c.v) || !c.data || document.visibilityState !== 'visible' || $('.sheet-bg')) return;
   if (document.activeElement && document.activeElement.id === 'chat-in' && document.activeElement.value) return;
   try {
     if (c.v === 'support' || c.v === 'asupport') {
@@ -1482,7 +1529,7 @@ async function reloadCatalog() { try { const d = await api('bootstrap'); S.data 
 
 /* ═══════════════ Управление ═══════════════ */
 V.admin = () => {
-  const tabs = [['stats', 'Сводка'], ['orders', 'Заказы', S.counts.attention], ['support', 'Поддержка', S.counts.support], ['products', 'Товары'], ['people', 'Люди'], ['promo', 'Промо']];
+  const tabs = [['stats', 'Сводка'], ['orders', 'Заказы', S.counts.attention], ['support', 'Поддержка', S.counts.support], ['products', 'Товары'], ['people', 'Люди'], ['promo', 'Промо'], ['subs', 'Каналы', S.counts.subsBroken]];
   const head = `<div class="title">Управление</div><div class="pills" style="margin-bottom:8px">${tabs.map(([k, t, b]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" onclick="S.adminTab='${k}';hapticSel();render(true,'tab')">${t}${b ? `<em>${b}</em>` : ''}</button>`).join('')}</div>`;
   return Promise.resolve(A[S.adminTab]()).then((h) => head + h);
 };
@@ -1490,7 +1537,7 @@ const A = {};
 
 A.stats = async () => {
   const s = await api('admin_stats');
-  S.counts.attention = (s.processing || 0) + (s.dispute || 0); S.counts.support = s.supportUnread || 0; renderTabbar();
+  S.counts.attention = (s.processing || 0) + (s.dispute || 0); S.counts.support = s.supportUnread || 0; S.counts.subsBroken = s.subs ? s.subs.broken : 0; renderTabbar();
   const by = (m) => (s.byMethod.find((x) => x.method === m) || {});
   const td = (m) => (s.todayBy.find((x) => x.method === m) || {}).sum || 0;
   const max = Math.max(1, ...s.chart);
@@ -1506,6 +1553,7 @@ A.stats = async () => {
       <button class="kpi" onclick="${goPeople('today')}"><div class="kl">Посетители сегодня</div><div class="kv2">${s.visitors}</div></button>
       <button class="kpi" onclick="${goPeople('all')}"><div class="kl">Новые сегодня</div><div class="kv2">${s.fresh}</div></button>
     </div>
+    ${s.subs ? `<button class="box sub-sum" onclick="S.adminTab='subs';hapticSel();render(true,'tab')"><span class="gl r-legend">${ic('mega')}</span><span class="grow"><b>Обязательная подписка</b><span>${s.subs.broken ? `<em class="bad-t">Не работает каналов: ${s.subs.broken}</em>` : `Упёрлись ${s.subs.blocked} · подписались ${s.subs.passed}`}</span></span>${ic('chev', 's')}</button>` : ''}
     <div class="sec"><h2>Заказы за неделю</h2><span>${nOrd(s.chart.reduce((a, b) => a + b, 0))}</span></div>
     <div class="box"><div class="bars">${s.chart.map((n, i) => `<div><b>${n || ''}</b><i class="${i === 6 ? 'on' : ''}" style="height:${Math.max(4, n / max * 76)}px;animation-delay:${i * 40}ms"></i><span>${days[i]}</span></div>`).join('')}</div></div>
     <div class="sec"><h2>Выручка за всё время</h2></div>
@@ -1754,6 +1802,9 @@ function evText(e) {
     admin_broadcast: ['shield', `Сделал рассылку на ${d.users} пользователей`, 'adm'],
     admin_grant: ['shield', `Назначил администратором ${esc(d.name)}`, 'adm'],
     admin_revoke: ['shield', `Снял права администратора с ${esc(d.name)}`, 'adm'],
+    sub_block: ['lock', `Упёрся в обязательную подписку${d.via === 'app' ? ' в маркете' : ' в боте'}${d.channels && d.channels.length ? `: ${d.channels.map((x) => esc(x)).join(', ')}` : ''}`, 'badc'],
+    sub_pass: ['check', 'Подписался на каналы и прошёл проверку', 'good'],
+    admin_channel: ['shield', { add: `Добавил канал ${t(d.title)} в обязательную подписку`, del: `Убрал канал ${t(d.title)} из обязательной подписки`, on: 'Включил обязательную подписку', off: 'Выключил обязательную подписку' }[d.action] || 'Изменил обязательную подписку', 'adm'],
   };
   return M[e.type] || ['activity', esc(e.type)];
 }
@@ -1974,6 +2025,56 @@ const PICKS = {
 };
 
 /* Промо: промокоды и рассылка */
+A.subs = async () => {
+  const r = await api('admin_channels');
+  S.counts.subsBroken = r.channels.filter((c) => c.broken).length; renderTabbar();
+  const st = r.stats;
+  const conv = st.blocked ? Math.round(st.passed / st.blocked * 100) : 0;
+  const row = (c) => `<div class="chn ${c.broken ? 'is-bad' : ''}">
+      ${avatar(c.id, c.title, 42)}
+      <div class="grow"><b>${esc(c.title)}</b><span>${c.username ? '@' + esc(c.username) : 'Приватный · ' + esc(c.chat_id)}</span>
+        <div class="chn-st">${c.broken ? `${ic('alert', 's')} Не работает: ${esc(c.broken)}` : `${ic('check', 's')} Проверка работает`}</div></div>
+      <button class="copy" onclick="tg.openTelegramLink('${esc(c.link)}')" aria-label="Открыть канал">${ic('link', 's')}</button>
+      <button class="copy" onclick="delChannel(${c.id}, '${esc(c.title).replace(/'/g, '&#39;')}')" aria-label="Убрать">${ic('trash', 's')}</button></div>`;
+  return `<div class="form-sec sub-on" style="margin-top:12px"><div class="row between">
+      <div class="grow"><h3>Обязательная подписка</h3><div class="xs mut" style="margin-top:3px">${r.on ? 'Без подписки на все каналы бот и маркет не открываются' : 'Выключена — пускаем всех'}</div></div>
+      <button class="switch ${r.on ? 'on' : ''}" onclick="toggleSub(${r.on ? 0 : 1})" aria-label="Включить или выключить"></button></div></div>
+    <div class="kpis" style="margin-top:10px">
+      <div class="kpi"><div class="kl">Упёрлись в проверку</div><div class="kv2">${st.blocked}</div><div class="xs mut">сегодня ${st.blockedToday}</div></div>
+      <div class="kpi"><div class="kl">Подписались после</div><div class="kv2" style="color:var(--ok)">${st.passed}</div><div class="xs mut">${st.blocked ? `${conv}% · ` : ''}сегодня ${st.passedToday}</div></div>
+    </div>
+    <div class="sec"><h2>Каналы</h2><span>${r.channels.length}</span></div>
+    ${r.channels.length ? r.channels.map(row).join('') : `<p class="sm mut" style="margin:4px 0 0">Каналов нет — пока проверка ничего не требует.</p>`}
+    <div class="form-sec"><h3>Добавить канал</h3>
+      <div class="field"><label>Канал</label><input id="ch-ref" placeholder="@channel, t.me/channel или -100…" autocomplete="off" autocapitalize="off"></div>
+      <div class="field"><label>Ссылка-приглашение <span class="mut" style="font-weight:500">— для приватного</span></label><input id="ch-inv" placeholder="https://t.me/+…" autocomplete="off" autocapitalize="off"></div>
+      <button class="btn acc" id="ch-add" style="margin-top:14px" onclick="addChannel()">${ic('plus', 's')} Добавить</button>
+      <div class="how sm" style="margin-top:10px">
+        <div class="li">${ic('shield')}<div><b>Сделайте бота администратором канала</b><span>Без этого Telegram не покажет, кто подписан. Особые права не нужны.</span></div></div>
+        <div class="li">${ic('lock')}<div><b>Приватный канал</b><span>Перешлите боту любой пост из канала — он пришлёт ID. Ссылку-приглашение возьмите в настройках канала.</span></div></div>
+        <div class="li">${ic('clock')}<div><b>Проверка</b><span>Подписку помним ${r.cacheMin} мин, потом проверяем снова. Админы бота проверку не проходят.</span></div></div>
+      </div></div>`;
+};
+async function addChannel() {
+  const ref = $('#ch-ref').value.trim(), invite = $('#ch-inv').value.trim();
+  if (!ref && !invite) return toast('Укажите канал', 'err');
+  const b = $('#ch-add'); b.disabled = true; b.innerHTML = '<i class="spin"></i> Проверяем канал';
+  try {
+    const r = await api('admin_channel_add', { ref, invite });
+    if (r.admin) { hapticN(); toast(`«${r.channel.title}» добавлен, проверка работает`, 'ok'); }
+    else { hapticN('warning'); toast(`«${r.channel.title}» добавлен, но ${r.why} — пока пропускаем`, 'err'); }
+    render(false);
+  } catch (e) { toast(e.message, 'err'); b.disabled = false; b.innerHTML = `${ic('plus', 's')} Добавить`; }
+}
+async function delChannel(id, title) {
+  if (!(await ask(`Убрать «${title}» из обязательной подписки?`))) return;
+  try { await api('admin_channel_delete', { id }); toast('Канал убран', 'ok'); render(false); } catch (e) { toast(e.message, 'err'); }
+}
+async function toggleSub(on) {
+  hapticSel();
+  try { await api('admin_sub_toggle', { on: !!on }); toast(on ? 'Обязательная подписка включена' : 'Проверка выключена', 'ok'); render(false); } catch (e) { toast(e.message, 'err'); }
+}
+
 A.promo = async () => {
   const { promos } = await api('admin_promos');
   return `<div class="sec" style="margin-top:14px"><h2>Промокоды</h2><span>${promos.length}</span></div>
@@ -2022,6 +2123,66 @@ async function sendMail() {
   catch (e) { toast(e.message, 'err'); }
 }
 
+/* ═══════════════ Обязательная подписка ═══════════════ */
+function gateHtml(ch, enter) {
+  const many = ch.length > 1;
+  return `<div class="gate ${enter ? 'enter' : ''}">
+    <div class="gate-ic">${ic('mega', 'l')}</div>
+    <h1>Подпишитесь на ${many ? 'каналы' : 'канал'}</h1>
+    <p>Чтобы пользоваться маркетом, подпишитесь на ${many ? 'наши каналы' : 'наш канал'}. Потом вернитесь сюда — проверим автоматически.</p>
+    <div class="gate-list">${ch.map((c, i) => `<button class="gch ${S.gateWent && S.gateWent[c.link] ? 'went' : ''}" onclick="openChannel(${i})" style="animation-delay:${120 + i * 70}ms">
+      ${avatar(c.id || i + 3, c.title, 44)}
+      <span class="grow"><b>${esc(c.title)}</b><span>${c.username ? '@' + esc(c.username) : 'Приватный канал'}</span></span>
+      <span class="gch-go">${S.gateWent && S.gateWent[c.link] ? 'Открыт' : 'Подписаться'}</span></button>`).join('')}</div>
+    <button class="btn acc" id="gate-btn" onclick="checkGate()">${ic('check', 's')} Проверить подписку</button>
+  </div>`;
+}
+function showGate(channels) {
+  const first = !S.gate;
+  S.gate = channels;
+  document.querySelectorAll('.sheet-bg').forEach((x) => x.remove());
+  $('#tabbar').style.display = 'none';
+  try { tg.BackButton.hide(); } catch (e) {}
+  if (first || !$('.gate')) { $('#app').innerHTML = gateHtml(channels, true); window.scrollTo(0, 0); }
+  else $('.gate').outerHTML = gateHtml(channels);
+}
+function openChannel(i) {
+  const c = S.gate && S.gate[i];
+  if (!c || !c.link) return;
+  haptic();
+  S.gateWent = { ...(S.gateWent || {}), [c.link]: 1 };
+  try { tg.openTelegramLink(c.link); } catch (e) { window.open(c.link, '_blank'); }
+  const el = document.querySelectorAll('.gch')[i];
+  if (el) setTimeout(() => { el.classList.add('went'); el.querySelector('.gch-go').textContent = 'Открыт'; }, 250);
+}
+let gateBusy = false;
+async function checkGate(silent) {
+  if (gateBusy || !S.gate) return;
+  gateBusy = true;
+  const b = $('#gate-btn');
+  if (b && !silent) { b.disabled = true; b.innerHTML = '<i class="spin"></i> Проверяем'; }
+  try {
+    const r = await api('sub_check');
+    if (r.ok) {
+      hapticN(); toast('Спасибо за подписку!', 'ok');
+      S.gate = null; S.gateWent = null;
+      $('#tabbar').style.display = '';
+      gateBusy = false;
+      return boot();
+    }
+    showGate(r.channels);
+    if (!silent) {
+      hapticN('error');
+      toast(`Вы ещё не подписались на: ${r.channels.map((c) => c.title).join(', ')}`, 'err');
+      const l = $('.gate-list'); if (l) l.classList.add('shake');
+    }
+  } catch (e) {
+    if (!silent) toast(e.message, 'err');
+    const nb = $('#gate-btn'); if (nb) { nb.disabled = false; nb.innerHTML = `${ic('check', 's')} Проверить подписку`; }
+  }
+  gateBusy = false;
+}
+
 /* ═══════════════ Запуск ═══════════════ */
 async function start() {
   if (!tg || !tg.initData) {
@@ -2035,6 +2196,14 @@ async function start() {
   tg.onEvent('themeChanged', applyTheme);
   try { tg.disableVerticalSwipes(); } catch (e) {}
   tg.BackButton.onClick(back);
+  // вернулся из канала — сразу проверяем подписку ещё раз
+  document.addEventListener('visibilitychange', () => { if (S.gate && document.visibilityState === 'visible') checkGate(true); });
+  try { tg.onEvent('activated', () => { if (S.gate) checkGate(true); }); } catch (e) {}
+  await boot();
+}
+
+// Загрузка данных и открытие нужного экрана. Повторяется после экрана подписки.
+async function boot() {
   const sp = (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '';
   let onb = null;
   try {
@@ -2046,6 +2215,7 @@ async function start() {
     if (['light', 'dark', 'auto'].includes(theme)) { S.themePref = theme; applyTheme(); }
     lastCartN = S.cart.reduce((a, i) => a + i.qty, 0);
   } catch (e) {
+    if (e.sub) return showGate(e.sub.channels);
     $('#app').innerHTML = errorBox(e.message);
     return;
   }
@@ -2063,6 +2233,7 @@ async function start() {
   else if (aoid && S.data.admin) S.stack = [{ v: 'admin' }, { v: 'aorder', id: aoid }];
   else if (pid && P(pid)) S.stack = [{ v: 'home' }, { v: 'product', id: pid }];
   else if (flag('orders')) S.stack = [{ v: 'orders' }];
+  else if (flag('subs') && S.data.admin) { S.adminTab = 'subs'; S.stack = [{ v: 'admin' }]; }
   else if (flag('admin') && S.data.admin) S.stack = [{ v: 'admin' }];
   else if (flag('support')) S.stack = [{ v: 'profile' }, { v: 'support' }];
   else if (flag('faq')) S.stack = [{ v: 'profile' }, { v: 'faq' }];
